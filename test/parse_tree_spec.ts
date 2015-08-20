@@ -1,7 +1,7 @@
-const expect = chai.expect
-const Token = chevrotain.Token
+namespace jes.parseTree.spec {
 
-namespace json_editor_services.parseTree.spec {
+    const expect = chai.expect
+    import Token = chevrotain.Token
 
     describe("The parseTree namespace", function () {
 

@@ -18,12 +18,12 @@ module.exports = function(grunt) {
 
         mocha_istanbul: {
             coverage: {
-                src:     'bin/json_editor_services.js',
+                src:     'bin/jes.js',
                 options: {
                     root:           './bin/',
-                    mask:           '*servicesSpecs.js',
+                    mask:           'jesSpecs.js',
                     coverageFolder: 'bin/coverage',
-                    excludes:       ['*servicesSpecs.js']
+                    excludes:       ['jesSpecs.js']
                 }
             }
         },
@@ -52,8 +52,8 @@ module.exports = function(grunt) {
             },
 
             release: {
-                src:     ['build/json_editor_services.ts'],
-                out:     'bin/json_editor_services.js',
+                src:     ['build/jes.ts'],
+                out:     'bin/jes.js',
                 options: {
                     declaration:    true,
                     removeComments: false,
@@ -77,8 +77,9 @@ module.exports = function(grunt) {
         concat: {
             release: {
                 files: {
-                    'bin/json_editor_servicesSpecs.js': [
-                        'bin/tsc/test/parse_tree_spec.js'
+                    'bin/jesSpecs.js': [
+                        'bin/tsc/test/parse_tree_spec.js',
+                        'bin/tsc/test/grammar_spec.js'
                     ]
                 }
             }
@@ -87,10 +88,10 @@ module.exports = function(grunt) {
         umd: {
             release: {
                 options: {
-                    src:            'bin/json_editor_services.js',
-                    objectToExport: 'json_editor_services',
-                    amdModuleId:    'json_editor_services',
-                    globalAlias:    'json_editor_services',
+                    src:            'bin/jes.js',
+                    objectToExport: 'jes',
+                    amdModuleId:    'jes',
+                    globalAlias:    'jes',
                     deps:           {
                         'default': ['_', 'chevrotain'],
                         amd:       ['lodash', 'chevrotain'],
@@ -102,12 +103,12 @@ module.exports = function(grunt) {
 
             release_specs: {
                 options: {
-                    src:      'bin/json_editor_servicesSpecs.js',
+                    src:      'bin/jesSpecs.js',
                     deps:     {
-                        'default': ['_', 'json_editor_services', 'chai', 'chevrotain'],
-                        amd:       ['lodash', 'json_editor_services', 'chai', 'chevrotain'],
-                        cjs:       ['lodash', './json_editor_services', 'chai', 'chevrotain'],
-                        global:    ['_', 'json_editor_services', 'chai', 'chevrotain']
+                        'default': ['_', 'jes', 'chai', 'chevrotain'],
+                        amd:       ['lodash', 'jes', 'chai', 'chevrotain'],
+                        cjs:       ['lodash', './jes', 'chai', 'chevrotain'],
+                        global:    ['_', 'jes', 'chai', 'chevrotain']
                     }
                 }
             }

@@ -1,4 +1,4 @@
-module json_editor_services.parseTree {
+namespace jes.parseTree {
 
     import Token = chevrotain.Token
 

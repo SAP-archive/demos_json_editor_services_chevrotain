@@ -21,7 +21,9 @@ module.exports = function(config) {
                 {pattern: 'test/**/*.ts', included: false},
                 'node_modules/chevrotain/bin/chevrotain.js',
                 'bin/gen/src/parse_tree.js',
-                'bin/gen/test/parse_tree_spec.js'
+                'bin/gen/src/grammar.js',
+                'bin/gen/test/parse_tree_spec.js',
+                'bin/gen/test/grammar_spec.js'
             ]),
 
         // test results reporter to use
