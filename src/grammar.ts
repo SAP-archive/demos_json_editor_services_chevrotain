@@ -22,6 +22,18 @@ namespace jes.grammar {
     export class Type extends Keyword { static PATTERN = /type/}
     export class Require extends Keyword { static PATTERN = /require/}
     export class Var extends Keyword { static PATTERN = /var/}
+    export class AnyKW extends Keyword { static PATTERN = /any/}
+    export class NumberKW extends Keyword { static PATTERN = /number/}
+    export class BooleanKW extends Keyword { static PATTERN = /boolean/}
+    export class StringKW extends Keyword { static PATTERN = /string/}
+    export class VoidKW extends Keyword { static PATTERN = /void/}
+    export class NewKW extends Keyword { static PATTERN = /new/}
+    export class TypeofKW extends Keyword { static PATTERN = /typeof/}
+    export class PrivateKW extends Keyword { static PATTERN = /private/}
+    export class PublicKW extends Keyword { static PATTERN = /public]/}
+    export class ProtectedKW extends Keyword { static PATTERN = /protected/}
+    export class TypeKW extends Keyword { static PATTERN = /type/}
+
 
     // DIFF: no support for unicode identifiers
     export class Identifier extends Token { static PATTERN = /\w[\w\d]*/}
@@ -40,12 +52,21 @@ namespace jes.grammar {
     export class RParen extends Token { static PATTERN = /\)/}
     export class LCurly extends Token { static PATTERN = /{/}
     export class RCurly extends Token { static PATTERN = /}/}
+    export class LChevron extends Token { static PATTERN = /</}
+    export class RChevron extends Token { static PATTERN = />/}
     export class LSquare extends Token { static PATTERN = /\[/}
     export class RSquare extends Token { static PATTERN = /]/}
     export class Comma extends Token { static PATTERN = /,/}
     export class Colon extends Token { static PATTERN = /:/}
+    export class FatArrow extends Token { static PATTERN = /=>/}
     export class Equals extends Token { static PATTERN = /=/}
     export class Semicolon extends Token { static PATTERN = /;/}
+    export class Pipe extends Token { static PATTERN = /\|/}
+    export class Question extends Token { static PATTERN = /\?/}
+    export class Dot extends Token { static PATTERN = /\./}
+    export class DotDotDot extends Token { static PATTERN = /\.\.\./}
+
+
 
     export class WhiteSpace extends Token {
         static PATTERN = /\s+/
@@ -254,15 +275,6 @@ namespace jes.grammar {
             })
         })
 
-        public TypeAliasDeclaration = this.RULE("TypeAliasDeclaration", () => {
-            this.CONSUME(Type)
-            this.CONSUME(Identifier)
-            this.CONSUME(Equals)
-            this.SUBRULE(this.Type)
-            this.CONSUME(Equals) // TODO: is this optional?
-        })
-
-
         // in-lined EnumDeclaration
         public AmbientEnumDeclaration = this.RULE("AmbientEnumDeclaration", () => {
             this.OPTION(() => {
@@ -293,7 +305,7 @@ namespace jes.grammar {
 
         public AmbientModuleDeclaration = this.RULE("AmbientModuleDeclaration", () => {
             this.CONSUME(Module)
-            this.SUBRULE(this.qualifiedName);
+            this.SUBRULE(this.QualifiedName);
             this.CONSUME(LCurly)
             this.OPTION(() => {
                 this.SUBRULE(this.AmbientModuleBody)
@@ -313,7 +325,7 @@ namespace jes.grammar {
             this.CONSUME(Import)
             this.CONSUME(Identifier)
             this.CONSUME(Equals)
-            this.SUBRULE(this.qualifiedName)
+            this.SUBRULE(this.QualifiedName)
             this.CONSUME(Semicolon) // TODO: is this optional?
         })
 
@@ -348,63 +360,357 @@ namespace jes.grammar {
         })
 
 
-        // replaces entityName and IdentifierPath
-        public qualifiedName = this.RULE("qualifiedName", () => {
-            this.AT_LEAST_ONE_SEP(Comma, () => {
+        // replaces entityName, IdentifierPath and TypeName
+        public QualifiedName = this.RULE("qualifiedName", () => {
+            this.AT_LEAST_ONE_SEP(Dot, () => {
                 this.CONSUME(Identifier)
             }, "identifier")
         })
 
 
         // types
+        public TypeParameters = this.RULE("TypeParameters", () => {
+            this.CONSUME(LChevron)
+            this.MANY(() => {
+                this.SUBRULE(this.TypeParameter)
+            })
+            this.CONSUME(RChevron)
+        })
+
+
+        public TypeParameter = this.RULE("TypeParameter", () => {
+            this.CONSUME(Identifier)
+            this.OPTION(() => {
+                this.SUBRULE(this.Constraint)
+            })
+        })
+
+
+        public Constraint = this.RULE("Constraint", () => {
+            this.CONSUME(Identifier)
+            this.SUBRULE(this.Type)
+        })
+
+
+        // TypeArguments:
+        //    '<' TypeArgumentList '>'
+        //
+        // TypeArgumentList:
+        //    TypeArgument
+        //    TypeArgumentList ',' TypeArgument
+        //
+        // TypeArgument:
+        //    Type
+        public TypeArguments = this.RULE("TypeArguments", () => {
+            this.AT_LEAST_ONE_SEP(Comma, () => {
+                this.SUBRULE(this.Type)
+            }, "A Type")
+        })
+
+
+        // this is also TypeArgument
         public Type = this.RULE("Type", () => {
-            // TODO impel
+            // @formatter:off
+            this.OR([
+                {ALT: () =>  this.SUBRULE(this.PrimaryOrUnionType)},
+                {ALT: () =>  this.SUBRULE(this.FunctionType)},
+                {ALT: () =>  this.SUBRULE(this.ConstructorType)},
+                ], "a Type")
+            // @formatter:on
         })
 
 
-        public CallSignature = this.RULE("CallSignature", () => {
-            // TODO impel
+        public PrimaryOrUnionType = this.RULE("PrimaryOrUnionType", () => {
+            this.AT_LEAST_ONE_SEP(Pipe, () => {
+                this.SUBRULE(this.Type)
+            }, "A Type")
         })
 
 
+        public PrimaryType = this.RULE("PrimaryType", () => {
+            // @formatter:off
+            this.OR([
+                {ALT: () =>  this.SUBRULE(this.ParenthesizedType)},
+                {ALT: () =>  this.SUBRULE(this.PredefinedType)},
+                {ALT: () =>  this.SUBRULE(this.TypeReference)},
+                {ALT: () =>  this.SUBRULE(this.ObjectType)},
+                {ALT: () =>  this.SUBRULE(this.ArrayType)},
+                {ALT: () =>  this.SUBRULE(this.TupleType)},
+                {ALT: () =>  this.SUBRULE(this.TypeQuery)}
+                ], "a Primary or Union type")
+            // @formatter:on
+        })
+
+
+        public ParenthesizedType = this.RULE("ParenthesizedType", () => {
+            this.CONSUME(LParen)
+            this.SUBRULE(this.Type)
+            this.CONSUME(RParen)
+        })
+
+
+        public PredefinedType = this.RULE("PredefinedType", () => {
+            // @formatter:off
+            this.OR([
+                {ALT: () =>  this.CONSUME(AnyKW)},
+                {ALT: () =>  this.CONSUME(NumberKW)},
+                {ALT: () =>  this.CONSUME(BooleanKW)},
+                {ALT: () =>  this.CONSUME(StringKW)},
+                {ALT: () =>  this.CONSUME(VoidKW)},
+                ], "a predefined type")
+            // @formatter:on
+        })
+
+
+        public TypeReference = this.RULE("TypeReference", () => {
+            this.SUBRULE(this.QualifiedName)
+            // [no LineTerminator here]
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeArguments)
+            })
+        })
+
+
+        public ObjectType = this.RULE("ObjectType", () => {
+            this.CONSUME(LCurly)
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeBody)
+            })
+            this.CONSUME(RCurly)
+        })
+
+
+        public TypeBody = this.RULE("TypeBody", () => {
+            this.MANY_SEP(Semicolon, () => {
+                this.SUBRULE(this.TypeMember)
+            })
+
+            this.OPTION(() => {
+                this.CONSUME(Semicolon)
+            })
+        })
+
+
+        public TypeMember = this.RULE("TypeMember", () => {
+            // @formatter:off
+            this.OR([
+                {ALT: () =>  this.SUBRULE(this.PropertySignature)},
+                {ALT: () =>  this.SUBRULE(this.CallSignature)},
+                {ALT: () =>  this.SUBRULE(this.ConstructSignature)},
+                {ALT: () =>  this.SUBRULE(this.IndexSignature)},
+                // DIFF - not implemented yet as it has same prefix as PropertySignature
+                //{ALT: () =>  this.SUBRULE(this.MethodSignature)},
+                ], "a TypeMember")
+            // @formatter:on
+        })
+
+
+        public ArrayType = this.RULE("ArrayType", () => {
+            this.SUBRULE(this.PrimaryType)
+            // [no LineTerminator here]
+            this.CONSUME(LSquare)
+            this.CONSUME(RSquare)
+        })
+
+
+        public TupleType = this.RULE("TupleType", () => {
+            this.CONSUME(LSquare)
+            this.MANY(() => {
+                this.SUBRULE(this.Type)
+            })
+            this.CONSUME(RSquare)
+        })
+
+        // FunctionType:
+        //    TypeParameters? ( ParameterList? ) => Type
+        public FunctionType = this.RULE("FunctionType", () => {
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeParameters)
+            })
+            this.CONSUME(LParen)
+            this.OPTION(() => {
+                this.SUBRULE(this.ParameterList)
+            })
+            this.CONSUME(RParen)
+            this.CONSUME(FatArrow)
+            this.SUBRULE(this.Type)
+        })
+
+
+        // ConstructorType:
+        //    'new' ConstructorType? '(' ConstructorType? ')' '=>' Type
+        public ConstructorType = this.RULE("ConstructorType", () => {
+            this.CONSUME(NewKW)
+            this.SUBRULE(this.FunctionType)
+        })
+
+
+        // TypeQuery:
+        //    'typeof' TypeQueryExpression
+        public TypeQuery = this.RULE("TypeQuery", () => {
+            this.CONSUME(TypeofKW)
+            this.SUBRULE(this.QualifiedName)
+        })
+
+        // PropertySignature:
+        //    PropertyName '?'? TypeAnnotation?
+        public PropertySignature = this.RULE("PropertySignature", () => {
+            this.SUBRULE(this.PropertyName)
+            this.OPTION(() => {
+                this.CONSUME(Question)
+            })
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeAnnotation)
+            })
+        })
+
+
+        //PropertyName:
+        //    IdentifierName |
+        //    StringLiteral  |
+        //    NumericLiteral
         public PropertyName = this.RULE("PropertyName", () => {
-            // TODO impel
+            // @formatter:off
+            this.OR([
+                {ALT: () =>  this.CONSUME(Identifier)},
+                {ALT: () =>  this.CONSUME(StringLiteral)},
+                {ALT: () =>  this.CONSUME(NumberLiteral)},
+                ], "a PropertyName")
+            // @formatter:on
         })
 
 
+        // CallSignature:
+        //    TypeParameters? '(' ParameterList? ')' TypeAnnotation?
+        public CallSignature = this.RULE("CallSignature", () => {
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeParameters)
+            })
+            this.CONSUME(LParen)
+            this.OPTION(() => {
+                this.SUBRULE(this.ParameterList)
+            })
+            this.CONSUME(RParen)
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeAnnotation)
+            })
+        })
+
+
+        // ParameterList:
+        //    RequiredParameterList
+        //    OptionalParameterList
+        //    RestParameter
+        //    RequiredParameterList ',' OptionalParameterList
+        //    RequiredParameterList ',' RestParameter
+        //    OptionalParameterList ',' RestParameter
+        //    RequiredParameterList ',' OptionalParameterList ',' RestParameter
         public ParameterList = this.RULE("ParameterList", () => {
-            // TODO impel
+            this.AT_LEAST_ONE_SEP(Comma, () => {
+                // @formatter:off
+            this.OR([
+                {ALT: () =>  this.SUBRULE(this.RequiredOrOptionalRestParameter)},
+                {ALT: () =>  this.SUBRULE(this.RestParameter)},
+                // of optional Param
+                ], "a Parameter signature")
+            // @formatter:on
+            }, "A Parameter signature")
         })
 
 
+        // RequiredParameter:
+        //    AccessibilityModifier? Identifier TypeAnnotation?
+        //    Identifier ':' StringLiteral // DIFF this variation is not supported yet
+
+        // OptionalParameter:
+        //    AccessibilityModifier? Identifier '?' TypeAnnotation?
+        //    AccessibilityModifier? Identifier TypeAnnotation? Initialiser
+        //    Identifier ? ':' StringLiteral // DIFF this variation is not supported yet
+        public RequiredOrOptionalRestParameter = this.RULE("RequiredOrOptionalParam", () => {
+            this.OPTION(() => {
+                this.SUBRULE(this.AccessibilityModifier)
+            })
+            this.CONSUME(Identifier)
+            this.OPTION(() => {
+                this.CONSUME(Question)
+            })
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeAnnotation)
+            })
+            // DIFF need to implement initializer with simple values
+            //this.OPTION(() => {
+            //    this.SUBRULE(this.Initialiser)
+            //})
+        })
+
+
+        // RestParameter:
+        //    '...' Identifier TypeAnnotation?
+        public RestParameter = this.RULE("RestParameter", () => {
+            this.CONSUME(DotDotDot)
+            this.CONSUME(Identifier)
+            this.OPTION(() => {
+                this.SUBRULE(this.TypeAnnotation)
+            })
+        })
+
+        // ConstructSignature:
+        //    'new' TypeParameters? '(' ParameterList? ')' TypeAnnotation?
+        public ConstructSignature = this.RULE("ConstructSignature", () => {
+            this.CONSUME(NewKW)
+            this.SUBRULE(this.CallSignature)
+        })
+
+
+        // AccessibilityModifier:
+        //    'public'
+        //    'private'
+        //    'protected'
         public AccessibilityModifier = this.RULE("AccessibilityModifier", () => {
-            // TODO impel
+            // @formatter:off
+            this.OR([
+                {ALT: () =>  this.CONSUME(PublicKW)},
+                {ALT: () =>  this.CONSUME(PrivateKW)},
+                {ALT: () =>  this.CONSUME(ProtectedKW)}
+                ], "an accessibility Modifier")
+            // @formatter:on
+        })
+
+        //IndexSignature:
+        //    '[' Identifier ':' string ']' TypeAnnotation
+        //    '[' Identifier ':' number ']' TypeAnnotation
+        public IndexSignature = this.RULE("IndexSignature", () => {
+            this.CONSUME(LSquare)
+            this.CONSUME(Identifier)
+            this.CONSUME(Colon)
+            // @formatter:off
+            this.OR([
+                {ALT: () =>  this.CONSUME(StringKW)},
+                {ALT: () =>  this.CONSUME(NumberKW)}
+                ], "an accessibility Modifier")
+            // @formatter:on
+            this.CONSUME(RSquare)
+            this.SUBRULE(this.TypeAnnotation)
+        })
+
+
+        // TypeAliasDeclaration:
+        //    'type' Identifier '=' Type ';'
+        public TypeAliasDeclaration = this.RULE("TypeAliasDeclaration", () => {
+            this.CONSUME(TypeKW)
+            this.CONSUME(Identifier)
+            this.CONSUME(Equals)
+            this.SUBRULE(this.Type)
+            this.CONSUME(Semicolon)
         })
 
 
         public TypeAnnotation = this.RULE("TypeAnnotation", () => {
-            // TODO impel
+            this.CONSUME(Colon)
+            this.SUBRULE(this.Type)
         })
-
-
-        public IndexSignature = this.RULE("IndexSignature", () => {
-            // TODO impel
-        })
-
-
-        public TypeParameters = this.RULE("TypeParameters", () => {
-            // TODO impel
-        })
-
-        public TypeReference = this.RULE("TypeReference", () => {
-            // TODO impel
-        })
-
-        public ObjectType = this.RULE("ObjectType", () => {
-            // TODO impel
-        })
-
     }
+
 
     function isAmbientModuleKeyword(token) {
         return (token instanceof Var ||
