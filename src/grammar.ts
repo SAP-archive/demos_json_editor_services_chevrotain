@@ -90,7 +90,7 @@ namespace jes.grammar {
         LParen, RParen, LCurly, RCurly, LChevron,
         RChevron, LSquare, RSquare, Comma, Colon, FatArrow, Equals, Semicolon, Pipe, Question, Dot, DotDotDot]
 
-    export let dtsLexer = new Lexer(dtsTokens, true)
+    export const DTSLexer = new Lexer(dtsTokens, true)
 
 
     // ----------------- parser -----------------
