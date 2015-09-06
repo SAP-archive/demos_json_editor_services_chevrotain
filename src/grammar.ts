@@ -213,7 +213,7 @@ namespace jes.grammar {
         public Type = this.RULE("Type", () => {
             // @formatter:off
             this.OR([
-                {ALT: () =>  this.SUBRULE(this.PrimaryOrUnionType)},
+                {ALT: () =>  this.SUBRULE(this.PrimaryOrUnionType)}, // TODO: fix: parenthise type same prefix as FunctionType
                 {ALT: () =>  this.SUBRULE(this.FunctionType)},
                 {ALT: () =>  this.SUBRULE(this.ConstructorType)},
                 ], "a Type")
@@ -245,11 +245,11 @@ namespace jes.grammar {
         public PrimaryType = this.RULE("PrimaryType", () => {
             // @formatter:off
             this.OR([
-                {ALT: () =>  this.SUBRULE(this.ParenthesizedType)},
+                {ALT: () =>  this.SUBRULE(this.ParenthesizedType)}, // needs to be combined with FunctionType due to same prefix and unknown lookahead
                 {ALT: () =>  this.SUBRULE(this.PredefinedType)},
                 {ALT: () =>  this.SUBRULE(this.TypeReference)},
                 {ALT: () =>  this.SUBRULE(this.ObjectType)},
-                {ALT: () =>  this.SUBRULE(this.ArrayType)},
+                {ALT: () =>  this.SUBRULE(this.ArrayType)}, // needs left factoring can start with primaryType
                 {ALT: () =>  this.SUBRULE(this.TupleType)},
                 {ALT: () =>  this.SUBRULE(this.TypeQuery)}
                 ], "a Primary or Union type")
