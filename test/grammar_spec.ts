@@ -5,7 +5,11 @@ namespace jes.grammar.spec {
     describe("The Grammar namespace", () => {
 
         it("exposes a dts Lexer + Parser", () => {
-          // TODO: add some sanity test...
+            let lexResult = DTSLexer.tokenize(samples.chai)
+            let parser = new DTSParser(lexResult.tokens)
+
+            parser.DeclarationSourceFile()
+            expect(parser.errors).to.be.empty
         })
     })
 }

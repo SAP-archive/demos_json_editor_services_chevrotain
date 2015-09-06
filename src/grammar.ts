@@ -42,6 +42,11 @@ namespace jes.grammar {
     export class ProtectedToken extends Keyword { static PATTERN = /protected/}
     export class TypeToken extends Keyword { static PATTERN = /type/}
 
+    // comments
+    export class Comment extends Token { static PATTERN = Lexer.NA}
+    export class SingleLineComment extends Comment { static PATTERN = /\/\/.*/}
+    export class MultiLineComment extends Comment { static PATTERN = /\/\*(.|\s)*?\*\//}
+
     // literals
     export class True extends Token { static PATTERN = /true/}
     export class False extends Token { static PATTERN = /false/}
@@ -84,6 +89,9 @@ namespace jes.grammar {
         BooleanToken, StringToken, VoidToken, NewToken, TypeofToken, PrivateToken, PublicToken, ProtectedToken, TypeToken,
         // ident
         Identifier,
+        // comments
+        SingleLineComment,
+        MultiLineComment,
         // literals
         True, False, Null, StringLiteral, NumberLiteral,
         // punctuation
@@ -134,7 +142,7 @@ namespace jes.grammar {
         // TypeQueryExpression:
         //    Identifier
         //    TypeQueryExpression '.' IdentifierName
-        public QualifiedName = this.RULE("qualifiedName", () => {
+        public QualifiedName = this.RULE("QualifiedName", () => {
             this.AT_LEAST_ONE_SEP(Dot, () => {
                 this.CONSUME(Identifier)
             }, "identifier")
@@ -187,9 +195,11 @@ namespace jes.grammar {
         // TypeArgument:
         //    Type
         public TypeArguments = this.RULE("TypeArguments", () => {
+            this.CONSUME(LChevron)
             this.AT_LEAST_ONE_SEP(Comma, () => {
                 this.SUBRULE(this.Type)
             }, "A Type")
+            this.CONSUME(RChevron)
         })
 
 
@@ -368,7 +378,7 @@ namespace jes.grammar {
                 this.SUBRULE(this.TypeParameters)
             })
             this.CONSUME(LParen)
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.SUBRULE(this.ParameterList)
             })
             this.CONSUME(RParen)
@@ -400,7 +410,7 @@ namespace jes.grammar {
             this.OPTION(() => {
                 this.CONSUME(Question)
             })
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.SUBRULE(this.TypeAnnotation)
             })
         })
@@ -428,11 +438,11 @@ namespace jes.grammar {
                 this.SUBRULE(this.TypeParameters)
             })
             this.CONSUME(LParen)
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.SUBRULE(this.ParameterList)
             })
             this.CONSUME(RParen)
-            this.OPTION(() => {
+            this.OPTION3(() => {
                 this.SUBRULE(this.TypeAnnotation)
             })
         })
@@ -467,15 +477,15 @@ namespace jes.grammar {
         //    AccessibilityModifier? Identifier '?' TypeAnnotation?
         //    AccessibilityModifier? Identifier TypeAnnotation? Initialiser
         //    Identifier ? ':' StringLiteral // DIFF this variation is not supported yet
-        public RequiredOrOptionalRestParameter = this.RULE("RequiredOrOptionalParam", () => {
+        public RequiredOrOptionalRestParameter = this.RULE("RequiredOrOptionalRestParameter", () => {
             this.OPTION(() => {
                 this.SUBRULE(this.AccessibilityModifier)
             })
             this.CONSUME(Identifier)
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.CONSUME(Question)
             })
-            this.OPTION(() => {
+            this.OPTION3(() => {
                 this.SUBRULE(this.TypeAnnotation)
             })
             // DIFF need to implement initializer with simple values
@@ -564,7 +574,7 @@ namespace jes.grammar {
             this.OPTION(() => {
                 this.SUBRULE(this.TypeParameters)
             })
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.SUBRULE(this.InterfaceExtendsClause)
             })
             this.SUBRULE(this.ObjectType)
@@ -601,7 +611,7 @@ namespace jes.grammar {
                 this.SUBRULE(this.ClassExtendsClause)
             })
 
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.SUBRULE(this.ImplementsClause)
             })
         })
@@ -634,7 +644,7 @@ namespace jes.grammar {
             this.CONSUME(EnumToken)
             this.CONSUME(Identifier)
             this.CONSUME(LCurly)
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.SUBRULE(this.EnumBody)
             })
             this.CONSUME(RCurly)
@@ -688,18 +698,18 @@ namespace jes.grammar {
         public DeclarationElement = this.RULE("DeclarationElement", () => {
             // @formatter:off
             this.OR([
-                {ALT: () =>  this.SUBRULE(this.ExportAssignment)},
-                {ALT: () =>  this.SUBRULE(this.AmbientExternalModuleDeclaration)},
-                {ALT: () => {
+                {WHEN: isExportAssignment, THEN_DO: () =>  this.SUBRULE(this.ExportAssignment)},
+                {WHEN: isAmbientExternalModuleDeclaration , THEN_DO: () =>  this.SUBRULE(this.AmbientExternalModuleDeclaration)}, // 'declare' 'module'
+                {WHEN: isOtherDeclarationElement, THEN_DO: () => {
                     this.OPTION(() => {
                         this.CONSUME(ExportToken)
                     })
-                    this.OR([
-                        {ALT: () =>  this.SUBRULE(this.InterfaceDeclaration)},
+                    this.OR2([
+                        {ALT: () =>  this.SUBRULE(this.InterfaceDeclaration)}, // export ? ('interface' | 'type' | 'import' | 'declare)
                         {ALT: () =>  this.SUBRULE(this.TypeAliasDeclaration)},
                         {ALT: () =>  this.SUBRULE(this.ImportDeclaration)},
-                        {ALT: () =>  this.SUBRULE(this.AmbientDeclaration)},
-                        {ALT: () =>  this.SUBRULE(this.ExternalImportDeclaration)}
+                        {ALT: () =>  this.SUBRULE(this.AmbientDeclaration)}
+                        //{ALT: () =>  this.SUBRULE(this.ExternalImportDeclaration)} // DIFF not currently supported
                         ], "Interface TypeAlias ImportDec AmbientDec or ExternalImportDec")}}
                 ], "a DeclarationElement")
             // @formatter:on
@@ -844,11 +854,11 @@ namespace jes.grammar {
             this.OPTION(() => {
                 this.SUBRULE(this.AccessibilityModifier)
             })
-            this.OPTION(() => {
+            this.OPTION2(() => {
                 this.CONSUME(StaticToken)
             })
             this.SUBRULE(this.PropertyName)
-            this.OPTION(() => {
+            this.OPTION3(() => {
                 // @formatter:off
             this.OR([
                 {ALT: () =>  this.SUBRULE(this.TypeAnnotation)},
@@ -969,6 +979,13 @@ namespace jes.grammar {
         token instanceof ImportToken)
     }
 
+    function isInterfaceOrTypeOrImportOrDeclare(token) {
+        return (token instanceof InterfaceToken ||
+        token instanceof TypeToken ||
+        token instanceof ImportToken ||
+        token instanceof DeclareToken)
+    }
+
 
     function isAmbientModuleElement():boolean {
         let la1 = this.LA(1)
@@ -982,6 +999,21 @@ namespace jes.grammar {
         let la1 = this.LA(1)
         let la2 = this.LA(2)
         return la1 instanceof ExportToken && la2 instanceof Equals
+    }
+
+
+    function isAmbientExternalModuleDeclaration():boolean {
+        let la1 = this.LA(1)
+        let la2 = this.LA(2)
+        return la1 instanceof DeclareToken && la2 instanceof ModuleToken
+    }
+
+
+    function isOtherDeclarationElement():boolean {
+        let la1 = this.LA(1)
+        let la2 = this.LA(2)
+        return isInterfaceOrTypeOrImportOrDeclare(la1) ||
+            (la1 instanceof ExportToken && isInterfaceOrTypeOrImportOrDeclare(la2))
     }
 
 

@@ -22,6 +22,7 @@ module.exports = function(config) {
                 'node_modules/chevrotain/bin/chevrotain.js',
                 'bin/gen/src/parse_tree.js',
                 'bin/gen/src/grammar.js',
+                'bin/gen/test/samples/chai.js',
                 'bin/gen/test/parse_tree_spec.js',
                 'bin/gen/test/grammar_spec.js'
             ]),
