@@ -5,8 +5,16 @@ namespace jes.grammar {
 
     // ----------------- Lexer -----------------
 
+    // DIFF: no support for unicode identifiers
+    export class Identifier extends Token { static PATTERN = /\w[\w\d]*/}
+
+
     // keywords - using Token suffix to avoid confusion with Typescript keywords/javascript native objects.
-    export class Keyword extends Token { static PATTERN = Lexer.NA}
+    export class Keyword extends Token {
+        static PATTERN = Lexer.NA
+        static LONGER_ALT = Identifier
+    }
+
     export class ExportToken extends Keyword { static PATTERN = /export/}
     export class DeclareToken extends Keyword { static PATTERN = /declare/}
     export class ModuleToken extends Keyword { static PATTERN = /module/} // TODO: what about namespace kw?
@@ -33,10 +41,6 @@ namespace jes.grammar {
     export class PublicToken extends Keyword { static PATTERN = /public]/}
     export class ProtectedToken extends Keyword { static PATTERN = /protected/}
     export class TypeToken extends Keyword { static PATTERN = /type/}
-
-
-    // DIFF: no support for unicode identifiers
-    export class Identifier extends Token { static PATTERN = /\w[\w\d]*/}
 
     // literals
     export class True extends Token { static PATTERN = /true/}
@@ -72,9 +76,19 @@ namespace jes.grammar {
         static GROUP = Lexer.SKIPPED
     }
 
-    // TODO: add all the tokens here! and handle keywords vs identifiers.
-    let dtsTokens = [WhiteSpace, NumberLiteral, StringLiteral, RCurly, LCurly,
-        LSquare, RSquare, Comma, Colon, True, False, Null]
+    let dtsTokens = [
+        WhiteSpace,
+        // keywords
+        ExportToken, DeclareToken, ModuleToken, FunctionToken, ClassToken, ConstructorToken, StaticToken, ExtendsToken,
+        ImplementsToken, InterfaceToken, EnumToken, ConstToken, ImportToken, RequireToken, VarToken, AnyToken, NumberToken,
+        BooleanToken, StringToken, VoidToken, NewToken, TypeofToken, PrivateToken, PublicToken, ProtectedToken, TypeToken,
+        // ident
+        Identifier,
+        // literals
+        True, False, Null, StringLiteral, NumberLiteral,
+        // punctuation
+        LParen, RParen, LCurly, RCurly, LChevron,
+        RChevron, LSquare, RSquare, Comma, Colon, FatArrow, Equals, Semicolon, Pipe, Question, Dot, DotDotDot]
 
     export let dtsLexer = new Lexer(dtsTokens, true)
 
@@ -89,17 +103,15 @@ namespace jes.grammar {
             Parser.performSelfAnalysis(this)
         }
 
-
-
+        /**
+         * the top level rule
+         */
         // DeclarationSourceFile:
         //    DeclarationElements?
         //
         // DeclarationElements:
         //    DeclarationElement
         //    DeclarationElements DeclarationElement
-        /**
-         * the top level rule
-         */
         public DeclarationSourceFile = this.RULE("DeclarationSourceFile", () => {
             this.MANY(() => {
                 this.SUBRULE(this.DeclarationElement)
@@ -320,6 +332,7 @@ namespace jes.grammar {
             // @formatter:on
         })
 
+
         // ArrayType:
         //    PrimaryType [no LineTerminator here] '[' ']'
         public ArrayType = this.RULE("ArrayType", () => {
@@ -505,6 +518,7 @@ namespace jes.grammar {
             // @formatter:on
         })
 
+
         //IndexSignature:
         //    '[' Identifier ':' string ']' TypeAnnotation
         //    '[' Identifier ':' number ']' TypeAnnotation
@@ -541,7 +555,6 @@ namespace jes.grammar {
 
 
         // A.5 Interfaces
-
 
         // InterfaceDeclaration:
         //    'interface' Identifier TypeParameters? InterfaceExtendsClause? ObjectType
@@ -592,6 +605,7 @@ namespace jes.grammar {
                 this.SUBRULE(this.ImplementsClause)
             })
         })
+
 
         // ClassExtendsClause:
         //    'extends' ClassType
@@ -725,7 +739,6 @@ namespace jes.grammar {
 
         // A.10 Ambients
 
-
         // AmbientDeclaration:
         //    'declare' AmbientVariableDeclaration
         //    'declare' AmbientFunctionDeclaration
@@ -853,11 +866,12 @@ namespace jes.grammar {
             this.SUBRULE(this.EnumDeclaration)
         })
 
+
         // AmbientModuleDeclaration:
         //    'module' IdentifierPath '{' AmbientModuleBody '}'
         public AmbientModuleDeclaration = this.RULE("AmbientModuleDeclaration", () => {
             this.CONSUME(ModuleToken)
-            this.SUBRULE(this.QualifiedName);
+            this.SUBRULE(this.QualifiedName)
             this.CONSUME(LCurly)
             this.OPTION(() => {
                 this.SUBRULE(this.AmbientModuleBody)
@@ -877,6 +891,7 @@ namespace jes.grammar {
                 this.SUBRULE(this.AmbientModuleElement)
             })
         })
+
 
         // AmbientModuleElement:
         //    export? AmbientVariableDeclaration
@@ -954,6 +969,7 @@ namespace jes.grammar {
         token instanceof ImportToken)
     }
 
+
     function isAmbientModuleElement():boolean {
         let la1 = this.LA(1)
         let la2 = this.LA(2)
@@ -961,18 +977,17 @@ namespace jes.grammar {
             la1 instanceof ExportToken && isAmbientModuleKeyword(la2)
     }
 
+
     function isExportAssignment():boolean {
         let la1 = this.LA(1)
         let la2 = this.LA(2)
         return la1 instanceof ExportToken && la2 instanceof Equals
     }
 
+
     function isExternalImportDeclaration():boolean {
         let la1 = this.LA(1)
         let la2 = this.LA(2)
         return la1 instanceof ExportToken && la2 instanceof ImportToken
     }
-
 }
-
-
