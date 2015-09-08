@@ -43,7 +43,10 @@ namespace jes.grammar {
     export class TypeToken extends Keyword { static PATTERN = /type/}
 
     // comments
-    export class Comment extends Token { static PATTERN = Lexer.NA}
+    export class Comment extends Token {
+        static PATTERN = Lexer.NA
+        static GROUP = Lexer.SKIPPED
+    }
     export class SingleLineComment extends Comment { static PATTERN = /\/\/.*/}
     export class MultiLineComment extends Comment { static PATTERN = /\/\*(.|\s)*?\*\//}
 
@@ -53,7 +56,9 @@ namespace jes.grammar {
     export class Null extends Token { static PATTERN = /null/}
 
     // DIFF - no single quotes strings
-    export class StringLiteral extends Token { static PATTERN = /"(:?[^\\"\n\r]+|\\(:?[bfnrtv"\\/]|u[0-9a-fA-F]{4}))*"/ }
+    export class StringLiteral extends Token {
+        static PATTERN = /"(:?[^\\"\n\r]+|\\(:?[bfnrtv"\\/]|u[0-9a-fA-F]{4}))*"|'(:?[^\\'\n\r]+|\\(:?[bfnrtv'\\/]|u[0-9a-fA-F]{4}))*'/
+    }
     export class NumberLiteral extends Token { static PATTERN = /-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/}
 
     // punctuation
@@ -245,15 +250,26 @@ namespace jes.grammar {
         public PrimaryType = this.RULE("PrimaryType", () => {
             // @formatter:off
             this.OR([
-                {ALT: () =>  this.SUBRULE(this.ParenthesizedType)}, // needs to be combined with FunctionType due to same prefix and unknown lookahead
+                //{ALT: () =>  this.SUBRULE(this.ParenthesizedType)}, // DIFF -
+                // needs to be combined with FunctionType due to same prefix and unknown lookahead
                 {ALT: () =>  this.SUBRULE(this.PredefinedType)},
                 {ALT: () =>  this.SUBRULE(this.TypeReference)},
                 {ALT: () =>  this.SUBRULE(this.ObjectType)},
-                {ALT: () =>  this.SUBRULE(this.ArrayType)}, // needs left factoring can start with primaryType
                 {ALT: () =>  this.SUBRULE(this.TupleType)},
                 {ALT: () =>  this.SUBRULE(this.TypeQuery)}
                 ], "a Primary or Union type")
             // @formatter:on
+
+            // ArrayType:
+            //    PrimaryType [no LineTerminator here] '[' ']'
+            //
+            // refactored to avoid left recursion, the grammar in the spec was too lenient
+            // allowing 'string string string [] [] []' for example
+            // this only allows array '[]' as a suffix
+            this.MANY(() => {
+                this.CONSUME(LSquare)
+                this.CONSUME(RSquare)
+            })
         })
 
 
@@ -314,12 +330,14 @@ namespace jes.grammar {
         //    TypeMember
         //    TypeMemberList ';' TypeMember
         public TypeBody = this.RULE("TypeBody", () => {
-            this.MANY_SEP(Semicolon, () => {
+            this.MANY(() => {
                 this.SUBRULE(this.TypeMember)
-            })
-            this.OPTION(() => {
                 this.CONSUME(Semicolon)
             })
+            // DIFF last semiColon is currently mandatory
+            //this.OPTION(() => {
+            //    this.CONSUME(Semicolon)
+            //})
         })
 
 
@@ -332,24 +350,12 @@ namespace jes.grammar {
         public TypeMember = this.RULE("TypeMember", () => {
             // @formatter:off
             this.OR([
-                {ALT: () =>  this.SUBRULE(this.PropertySignature)},
+                {ALT: () =>  this.SUBRULE(this.PropertySignatureOrMethodSignature)},
                 {ALT: () =>  this.SUBRULE(this.CallSignature)},
                 {ALT: () =>  this.SUBRULE(this.ConstructSignature)},
                 {ALT: () =>  this.SUBRULE(this.IndexSignature)},
-                // DIFF - not implemented yet as it has same prefix as PropertySignature
-                //{ALT: () =>  this.SUBRULE(this.MethodSignature)},
                 ], "a Type Member")
             // @formatter:on
-        })
-
-
-        // ArrayType:
-        //    PrimaryType [no LineTerminator here] '[' ']'
-        public ArrayType = this.RULE("ArrayType", () => {
-            this.SUBRULE(this.PrimaryType)
-            // [no LineTerminator here]
-            this.CONSUME(LSquare)
-            this.CONSUME(RSquare)
         })
 
 
@@ -405,13 +411,21 @@ namespace jes.grammar {
 
         // PropertySignature:
         //    PropertyName '?'? TypeAnnotation?
-        public PropertySignature = this.RULE("PropertySignature", () => {
+        //
+        // MethodSignature:
+        //    PropertyName '?'? CallSignature
+        public PropertySignatureOrMethodSignature = this.RULE("PropertySignatureOrMethodSignature", () => {
             this.SUBRULE(this.PropertyName)
             this.OPTION(() => {
                 this.CONSUME(Question)
             })
             this.OPTION2(() => {
-                this.SUBRULE(this.TypeAnnotation)
+                // @formatter:off
+                this.OR([
+                    {ALT: () =>  this.SUBRULE(this.TypeAnnotation)},
+                    {ALT: () =>  this.SUBRULE(this.CallSignature)},
+                    ], "a PropertyName")
+                // @formatter:on
             })
         })
 
@@ -699,13 +713,14 @@ namespace jes.grammar {
             // @formatter:off
             this.OR([
                 {WHEN: isExportAssignment, THEN_DO: () =>  this.SUBRULE(this.ExportAssignment)},
-                {WHEN: isAmbientExternalModuleDeclaration , THEN_DO: () =>  this.SUBRULE(this.AmbientExternalModuleDeclaration)}, // 'declare' 'module'
+                // DIFF - need better lookahead to distinguish between AmbientExternalModuleDeclaration and AmbientModuleDeclaration
+                //{WHEN: isAmbientExternalModuleDeclaration , THEN_DO: () =>  this.SUBRULE(this.AmbientExternalModuleDeclaration)},
                 {WHEN: isOtherDeclarationElement, THEN_DO: () => {
                     this.OPTION(() => {
                         this.CONSUME(ExportToken)
                     })
                     this.OR2([
-                        {ALT: () =>  this.SUBRULE(this.InterfaceDeclaration)}, // export ? ('interface' | 'type' | 'import' | 'declare)
+                        {ALT: () =>  this.SUBRULE(this.InterfaceDeclaration)},
                         {ALT: () =>  this.SUBRULE(this.TypeAliasDeclaration)},
                         {ALT: () =>  this.SUBRULE(this.ImportDeclaration)},
                         {ALT: () =>  this.SUBRULE(this.AmbientDeclaration)}
@@ -975,6 +990,7 @@ namespace jes.grammar {
         token instanceof InterfaceToken ||
         token instanceof ConstToken ||
         token instanceof EnumToken ||
+        token instanceof ClassToken ||
         token instanceof ModuleToken || // TODO 'namespace kw? )
         token instanceof ImportToken)
     }
@@ -1009,11 +1025,12 @@ namespace jes.grammar {
     }
 
 
+    // TODO: verify this
     function isOtherDeclarationElement():boolean {
         let la1 = this.LA(1)
         let la2 = this.LA(2)
-        return isInterfaceOrTypeOrImportOrDeclare(la1) ||
-            (la1 instanceof ExportToken && isInterfaceOrTypeOrImportOrDeclare(la2))
+        return (isAmbientModuleKeyword(la1) || isInterfaceOrTypeOrImportOrDeclare(la1)) ||
+            (la1 instanceof ExportToken && (isAmbientModuleKeyword(la2)) || isInterfaceOrTypeOrImportOrDeclare(la2))
     }
 
 
