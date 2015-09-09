@@ -18,7 +18,7 @@ namespace jes.grammar {
     export class ExportToken extends Keyword { static PATTERN = /export/}
     export class DeclareToken extends Keyword { static PATTERN = /declare/}
     export class ModuleToken extends Keyword { static PATTERN = /module/} // TODO: what about namespace kw?
-    export class FunctionToken extends Keyword { static PATTERN = /Function/}
+    export class FunctionToken extends Keyword { static PATTERN = /function/}
     export class ClassToken extends Keyword { static PATTERN = /class/}
     export class ConstructorToken extends Keyword { static PATTERN = /Constructor/}
     export class StaticToken extends Keyword { static PATTERN = /static/}
@@ -27,7 +27,7 @@ namespace jes.grammar {
     export class InterfaceToken extends Keyword { static PATTERN = /interface/}
     export class EnumToken extends Keyword { static PATTERN = /enum/}
     export class ConstToken extends Keyword { static PATTERN = /const/}
-    export class ImportToken extends Keyword { static PATTERN = /Import/}
+    export class ImportToken extends Keyword { static PATTERN = /import/}
     export class RequireToken extends Keyword { static PATTERN = /require/}
     export class VarToken extends Keyword { static PATTERN = /var/}
     export class AnyToken extends Keyword { static PATTERN = /any/}
@@ -101,7 +101,7 @@ namespace jes.grammar {
         True, False, Null, StringLiteral, NumberLiteral,
         // punctuation
         LParen, RParen, LCurly, RCurly, LChevron,
-        RChevron, LSquare, RSquare, Comma, Colon, FatArrow, Equals, Semicolon, Pipe, Question, Dot, DotDotDot]
+        RChevron, LSquare, RSquare, Comma, Colon, FatArrow, Equals, Semicolon, Pipe, Question, DotDotDot, Dot]
 
     export const DTSLexer = new Lexer(dtsTokens, true)
 
@@ -291,6 +291,7 @@ namespace jes.grammar {
         public PredefinedType = this.RULE("PredefinedType", () => {
             // @formatter:off
             this.OR([
+                // TODO: consider reducing number of keywords by consuming these predefined types as simple identifiers
                 {ALT: () =>  this.CONSUME(AnyToken)},
                 {ALT: () =>  this.CONSUME(NumberToken)},
                 {ALT: () =>  this.CONSUME(BooleanToken)},
@@ -605,12 +606,12 @@ namespace jes.grammar {
 
         // ClassOrInterfaceTypeList:
         //    ClassOrInterfaceType
-        //    ClassOrInterfaceTypeList , ClassOrInterfaceType
+        //    ClassOrInterfaceTypeList ',' ClassOrInterfaceType
         //
         // ClassOrInterfaceType:
         //    TypeReference
         public ClassOrInterfaceTypeList = this.RULE("ClassOrInterfaceTypeList", () => {
-            this.MANY(() => {
+            this.MANY_SEP(Comma, () => {
                 this.SUBRULE(this.TypeReference)
             })
         })

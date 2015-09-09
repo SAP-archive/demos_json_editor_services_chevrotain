@@ -79,6 +79,7 @@ module.exports = function(grunt) {
                 files: {
                     'bin/jesSpecs.js': [
                         'bin/tsc/test/parse_tree_spec.js',
+                        'bin/tsc/test/samples/chai.js',
                         'bin/tsc/test/grammar_spec.js'
                     ]
                 }

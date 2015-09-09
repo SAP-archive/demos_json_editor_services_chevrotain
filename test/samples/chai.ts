@@ -78,9 +78,9 @@ declare module Chai {
         length: Length;
         lengthOf: Length;
         match(regexp: RegExp|string, message?: string): Assertion;
-        string(string: string, message?: string): Assertion;
+        //string(string: string, message?: string): Assertion;
         keys: Keys;
-        key(string: string): Assertion;
+        //key(string: string): Assertion;
         throw: Throw;
         throws: Throw;
         Throw: Throw;
@@ -126,7 +126,7 @@ declare module Chai {
     }
 
     interface TypeComparison {
-        (type: string, message?: string): Assertion;
+        //(type: string, message?: string): Assertion;
         instanceof: InstanceOf;
         instanceOf: InstanceOf;
     }
@@ -232,11 +232,11 @@ declare module Chai {
         isBoolean(val: any, msg?: string): void;
         isNotBoolean(val: any, msg?: string): void;
 
-        typeOf(val: any, type: string, msg?: string): void;
-        notTypeOf(val: any, type: string, msg?: string): void;
+        //typeOf(val: any, type: string, msg?: string): void;
+        //notTypeOf(val: any, type: string, msg?: string): void;
 
-        instanceOf(val: any, type: Function, msg?: string): void;
-        notInstanceOf(val: any, type: Function, msg?: string): void;
+        //instanceOf(val: any, type: Function, msg?: string): void;
+        //notInstanceOf(val: any, type: Function, msg?: string): void;
 
         include(exp: string, inc: any, msg?: string): void;
         include(exp: any[], inc: any, msg?: string): void;
@@ -304,9 +304,9 @@ declare module Chai {
 
 declare var chai: Chai.ChaiStatic;
 
-declare module "chai" {
-    export = chai;
-}
+//declare module "chai" {
+//    export = chai;
+//}
 
 interface Object {
     should: Chai.Assertion;
