@@ -503,10 +503,9 @@ namespace jes.grammar {
             this.OPTION3(() => {
                 this.SUBRULE(this.TypeAnnotation)
             })
-            // DIFF need to implement initializer with simple values
-            //this.OPTION(() => {
-            //    this.SUBRULE(this.Initialiser)
-            //})
+
+            // initializer not permitted in d.ts
+            // see 3.8.2.2 Parameter List in the spec
         })
 
 
