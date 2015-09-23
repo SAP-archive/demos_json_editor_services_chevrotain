@@ -414,7 +414,7 @@ namespace jes.grammar {
         //    PropertyName '?'? TypeAnnotation?
         //
         // MethodSignature:
-        //    PropertyName '?'? CallSignature
+        //    PropertyName '?'? CallSignature //TODO: is CallSignature optional? it is implemented as optional right now
         public PropertySignatureOrMethodSignature = this.RULE("PropertySignatureOrMethodSignature", () => {
             this.SUBRULE(this.PropertyName)
             this.OPTION(() => {
@@ -475,7 +475,7 @@ namespace jes.grammar {
             this.AT_LEAST_ONE_SEP(Comma, () => {
                 // @formatter:off
             this.OR([
-                {ALT: () =>  this.SUBRULE(this.RequiredOrOptionalRestParameter)},
+                {ALT: () =>  this.SUBRULE(this.RequiredOrOptionalParameter)},
                 {ALT: () =>  this.SUBRULE(this.RestParameter)},
                 // of optional Param
                 ], "a Parameter signature")
@@ -492,7 +492,7 @@ namespace jes.grammar {
         //    AccessibilityModifier? Identifier '?' TypeAnnotation?
         //    AccessibilityModifier? Identifier TypeAnnotation? Initialiser
         //    Identifier ? ':' StringLiteral // DIFF this variation is not supported yet
-        public RequiredOrOptionalRestParameter = this.RULE("RequiredOrOptionalRestParameter", () => {
+        public RequiredOrOptionalParameter = this.RULE("RequiredOrOptionalParameter", () => {
             this.OPTION(() => {
                 this.SUBRULE(this.AccessibilityModifier)
             })
@@ -554,7 +554,7 @@ namespace jes.grammar {
             this.OR([
                 {ALT: () =>  this.CONSUME(StringToken)},
                 {ALT: () =>  this.CONSUME(NumberToken)}
-                ], "an accessibility Modifier")
+                ], "'string' or 'number'")
             // @formatter:on
             this.CONSUME(RSquare)
             this.SUBRULE(this.TypeAnnotation)
@@ -649,9 +649,13 @@ namespace jes.grammar {
         })
 
 
+        // AmbientEnumDeclaration:
+        //    EnumDeclaration
+        //
         // EnumDeclaration:
         //    const? 'enum' Identifier '{' EnumBody? '}'
-        public EnumDeclaration = this.RULE("EnumDeclaration", () => {
+        public AmbientEnumDeclaration = this.RULE("AmbientEnumDeclaration", () => {
+
             this.OPTION(() => {
                 this.CONSUME(ConstToken)
             })
@@ -875,20 +879,13 @@ namespace jes.grammar {
             this.SUBRULE(this.PropertyName)
             this.OPTION3(() => {
                 // @formatter:off
-            this.OR([
-                {ALT: () =>  this.SUBRULE(this.TypeAnnotation)},
-                {ALT: () =>  this.SUBRULE(this.CallSignature)},
-                ], "an AmbientClassBodyElement")
-            // @formatter:on
-            })
+                this.OR([
+                    {ALT: () =>  this.SUBRULE(this.TypeAnnotation)},
+                    {ALT: () =>  this.SUBRULE(this.CallSignature)},
+                    ], "TypeAnnotation or CallSignature")
+                    // @formatter:on
+                })
             this.CONSUME(Semicolon)
-        })
-
-
-        // AmbientEnumDeclaration:
-        //    EnumDeclaration
-        public AmbientEnumDeclaration = this.RULE("AmbientEnumDeclaration", () => {
-            this.SUBRULE(this.EnumDeclaration)
         })
 
 
@@ -947,14 +944,14 @@ namespace jes.grammar {
 
         // AmbientExternalModuleDeclaration:
         //    'declare' 'module' StringLiteral '{' AmbientExternalModuleBody '}'
-        public AmbientExternalModuleDeclaration = this.RULE("AmbientExternalModuleDeclaration", () => {
-            this.CONSUME(DeclareToken)
-            this.CONSUME(ModuleToken)
-            this.CONSUME(StringLiteral)
-            this.CONSUME(LCurly)
-            this.SUBRULE(this.AmbientExternalModuleBody)
-            this.CONSUME(RCurly)
-        })
+        //public AmbientExternalModuleDeclaration = this.RULE("AmbientExternalModuleDeclaration", () => {
+        //    this.CONSUME(DeclareToken)
+        //    this.CONSUME(ModuleToken)
+        //    this.CONSUME(StringLiteral)
+        //    this.CONSUME(LCurly)
+        //    this.SUBRULE(this.AmbientExternalModuleBody)
+        //    this.CONSUME(RCurly)
+        //})
 
 
         // AmbientExternalModuleBody:
@@ -968,19 +965,20 @@ namespace jes.grammar {
         //    AmbientModuleElement
         //    ExportAssignment
         //    export? ExternalImportDeclaration
-        public AmbientExternalModuleBody = this.RULE("AmbientExternalModuleBody", () => {
-            // @formatter:off
-            this.OR([
-                {WHEN: isAmbientModuleElement, THEN_DO: () =>  this.SUBRULE(this.AmbientModuleElement)},
-                {WHEN: isExportAssignment, THEN_DO:() =>  this.SUBRULE(this.ExportAssignment)},
-                {WHEN: isExternalImportDeclaration, THEN_DO: () => {
-                    this.OPTION(() => {
-                        this.CONSUME(ExportToken)
-                    })
-                    this.SUBRULE(this.ExternalImportDeclaration)}}
-            ], "Interface TypeAlias ImportDec AmbientDec or ExternalImportDec")
-            // @formatter:on
-        })
+        //public AmbientExternalModuleBody = this.RULE("AmbientExternalModuleBody", () => {
+        //    // @formatter:off
+        //    // TODO: missing repetition
+        //    this.OR([
+        //        {WHEN: isAmbientModuleElement, THEN_DO: () =>  this.SUBRULE(this.AmbientModuleElement)},
+        //        {WHEN: isExportAssignment, THEN_DO:() =>  this.SUBRULE(this.ExportAssignment)},
+        //        {WHEN: isExternalImportDeclaration, THEN_DO: () => {
+        //            this.OPTION(() => {
+        //                this.CONSUME(ExportToken)
+        //            })
+        //            this.SUBRULE(this.ExternalImportDeclaration)}}
+        //    ], "Interface TypeAlias ImportDec AmbientDec or ExternalImportDec")
+        //    // @formatter:on
+        //})
     }
 
 
