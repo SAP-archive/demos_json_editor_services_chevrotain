@@ -4,6 +4,7 @@ namespace jes.grammar {
     import VirtualToken = chevrotain.VirtualToken
     import Lexer = chevrotain.Lexer
     import PT = jes.parseTree.PT
+    import ParseTree = jes.parseTree.ParseTree;
 
     // ----------------- Lexer -----------------
 
@@ -107,35 +108,61 @@ namespace jes.grammar {
 
     export const DTSLexer = new Lexer(dtsTokens, true)
 
-    export class ParseTreeToken extends VirtualToken {}
+    export abstract class ParseTreeToken extends VirtualToken {}
+    export abstract class SyntaxBox extends ParseTreeToken {}
+
+    function SYNTAX_BOX(tokens:Token[]):ParseTree {
+        let tokensCompcat = _.compact(tokens)
+        let tokensTrees = _.map(tokensCompcat, (currToken) => PT(currToken))
+        return PT(SyntaxBox, tokensTrees)
+    }
+
+    function CHILDREN(...children:any[]):ParseTree[] {
+        let flatChildren = _.flatten(children)
+        let existingFlatChildren = _.compact(flatChildren)
+
+        return _.map(existingFlatChildren, (currChild:any) => {
+            return currChild instanceof ParseTree ?
+                currChild :
+                PT(currChild)
+        })
+    }
+
+    // PT prefix/suffix?
     export class DeclarationSourceFile extends ParseTreeToken {}
     export class QualifiedName extends ParseTreeToken {}
     export class TypeParameters extends ParseTreeToken {}
     export class TypeParameter extends ParseTreeToken {}
     export class Constraint extends ParseTreeToken {}
     export class TypeArguments extends ParseTreeToken {}
-    export class Type extends ParseTreeToken {}
-    export class PrimaryOrUnionType extends ParseTreeToken {}
-    export class PrimaryType extends ParseTreeToken {}
-    export class ParenthesizedType extends ParseTreeToken {}
+
+    export abstract class Type extends ParseTreeToken {}
+    export class PrimaryOrUnionType extends Type {}
+    export class PrimaryType extends Type {}
+    export class ParenthesizedType extends Type {}
+
     export class PredefinedType extends ParseTreeToken {}
     export class TypeReference extends ParseTreeToken {}
     export class ObjectType extends ParseTreeToken {}
     export class TypeBody extends ParseTreeToken {}
-    export class TypeMember extends ParseTreeToken {}
+
+    export abstract class TypeMember extends ParseTreeToken {}
+    export class PropertySignatureOrMethodSignature extends TypeMember {}
+    export class CallSignature extends TypeMember {}
+    export class ConstructSignature extends TypeMember {}
+    export class IndexSignature extends TypeMember {}
+
+
     export class TupleType extends ParseTreeToken {}
     export class FunctionType extends ParseTreeToken {}
     export class ConstructorType extends ParseTreeToken {}
     export class TypeQuery extends ParseTreeToken {}
-    export class PropertySignatureOrMethodSignature extends ParseTreeToken {}
+
     export class PropertyName extends ParseTreeToken {}
-    export class CallSignature extends ParseTreeToken {}
     export class ParameterList extends ParseTreeToken {}
     export class RequiredOrOptionalParameter extends ParseTreeToken {}
     export class RestParameter extends ParseTreeToken {}
-    export class ConstructSignature extends ParseTreeToken {}
     export class AccessibilityModifier extends ParseTreeToken {}
-    export class IndexSignature extends ParseTreeToken {}
     export class TypeAliasDeclaration extends ParseTreeToken {}
     export class TypeAnnotation extends ParseTreeToken {}
     export class InterfaceDeclaration extends ParseTreeToken {}
@@ -190,10 +217,11 @@ namespace jes.grammar {
             let declarationElements = []
 
             this.MANY(() => {
-                declarationElements.push(this.SUBRULE(this.DeclarationElement))
+                declarationElements.push(
+                    this.SUBRULE(this.DeclarationElement))
             })
 
-            //return PT()
+            return PT(DeclarationSourceFile, declarationElements)
         })
 
 
@@ -213,9 +241,16 @@ namespace jes.grammar {
         //    Identifier
         //    TypeQueryExpression '.' IdentifierName
         public QualifiedName = this.RULE("QualifiedName", () => {
-            this.AT_LEAST_ONE_SEP(Dot, () => {
-                this.CONSUME(Identifier)
-            }, "identifier")
+
+            let idents = []
+
+            let dots =
+                this.AT_LEAST_ONE_SEP(Dot, () => {
+                    idents.push(
+                        this.CONSUME(Identifier))
+                }, "identifier")
+
+            return PT(QualifiedName, CHILDREN(idents, SYNTAX_BOX(dots)))
         })
 
 
@@ -229,29 +264,53 @@ namespace jes.grammar {
         //    TypeParameter
         //    TypeParameterList ',' TypeParameter
         public TypeParameters = this.RULE("TypeParameters", () => {
-            this.CONSUME(LChevron)
-            this.AT_LEAST_ONE_SEP(Comma, () => {
-                this.SUBRULE(this.TypeParameter)
-            }, "A Type Parameter")
-            this.CONSUME(RChevron)
+            let sb = []
+            let typeParams = []
+
+            sb.push(
+                this.CONSUME(LChevron))
+
+            let commas =
+                this.AT_LEAST_ONE_SEP(Comma, () => {
+                    typeParams.push(
+                        this.SUBRULE(this.TypeParameter))
+                }, "A Type Parameter")
+
+            sb.push(
+                this.CONSUME(RChevron))
+
+            return PT(TypeParameters, CHILDREN(typeParams, SYNTAX_BOX(sb.concat(commas))))
         })
 
 
         // TypeParameter:
         //    Identifier Constraint?
         public TypeParameter = this.RULE("TypeParameter", () => {
-            this.CONSUME(Identifier)
+            let constraint = undefined
+
+            let ident =
+                this.CONSUME(Identifier)
             this.OPTION(() => {
-                this.SUBRULE(this.Constraint)
+                constraint =
+                    this.SUBRULE(this.Constraint)
             })
+
+            return PT(TypeParameters, CHILDREN(ident, constraint))
         })
 
 
         // Constraint:
         //    'extends' Type
         public Constraint = this.RULE("Constraint", () => {
-            this.CONSUME(ExtendsToken)
-            this.SUBRULE(this.Type)
+            let sb = []
+
+            sb.push(
+                this.CONSUME(ExtendsToken))
+
+            let type =
+                this.SUBRULE(this.Type)
+
+            return PT(Constraint, CHILDREN(type, SYNTAX_BOX(sb)))
         })
 
 
@@ -265,11 +324,22 @@ namespace jes.grammar {
         // TypeArgument:
         //    Type
         public TypeArguments = this.RULE("TypeArguments", () => {
-            this.CONSUME(LChevron)
-            this.AT_LEAST_ONE_SEP(Comma, () => {
-                this.SUBRULE(this.Type)
-            }, "A Type")
-            this.CONSUME(RChevron)
+            let sb = []
+            let types = []
+
+            sb.push(
+                this.CONSUME(LChevron))
+
+            let commas =
+                this.AT_LEAST_ONE_SEP(Comma, () => {
+                    types.push(
+                        this.SUBRULE(this.Type))
+                }, "A Type")
+
+            sb.push(
+                this.CONSUME(RChevron))
+
+            return PT(TypeArguments, CHILDREN(types, SYNTAX_BOX(sb.concat(commas))))
         })
 
 
@@ -281,13 +351,11 @@ namespace jes.grammar {
         //    FunctionType
         //    ConstructorType
         public Type = this.RULE("Type", () => {
-            // @formatter:off
-            this.OR([
-                {ALT: () =>  this.SUBRULE(this.PrimaryOrUnionType)}, // TODO: fix: parenthise type same prefix as FunctionType
+            return this.OR([
+                {ALT: () =>  this.SUBRULE(this.PrimaryOrUnionType)}, // TODO: fix: parentheses type same prefix as FunctionType
                 {ALT: () =>  this.SUBRULE(this.FunctionType)},
                 {ALT: () =>  this.SUBRULE(this.ConstructorType)},
-                ], "a Type")
-            // @formatter:on
+            ], "a Type")
         })
 
 
@@ -298,9 +366,15 @@ namespace jes.grammar {
         // UnionType:
         //    PrimaryOrUnionType '|' PrimaryType
         public PrimaryOrUnionType = this.RULE("PrimaryOrUnionType", () => {
-            this.AT_LEAST_ONE_SEP(Pipe, () => {
-                this.SUBRULE(this.PrimaryType)
-            }, "A Type")
+            let primTypes = []
+
+            let commas =
+                this.AT_LEAST_ONE_SEP(Pipe, () => {
+                    primTypes.push(
+                        this.SUBRULE(this.PrimaryType))
+                }, "A Type")
+
+            return PT(PrimaryOrUnionType, CHILDREN(primTypes, SYNTAX_BOX(commas)))
         })
 
 
@@ -313,17 +387,18 @@ namespace jes.grammar {
         //    TupleType
         //    TypeQuery
         public PrimaryType = this.RULE("PrimaryType", () => {
-            // @formatter:off
-            this.OR([
-                //{ALT: () =>  this.SUBRULE(this.ParenthesizedType)}, // DIFF -
-                // needs to be combined with FunctionType due to same prefix and unknown lookahead
-                {ALT: () =>  this.SUBRULE(this.PredefinedType)},
-                {ALT: () =>  this.SUBRULE(this.TypeReference)},
-                {ALT: () =>  this.SUBRULE(this.ObjectType)},
-                {ALT: () =>  this.SUBRULE(this.TupleType)},
-                {ALT: () =>  this.SUBRULE(this.TypeQuery)}
+            let brackets = []
+
+            let type =
+                this.OR([
+                    //{ALT: () =>  this.SUBRULE(this.ParenthesizedType)}, // DIFF -
+                    // needs to be combined with FunctionType due to same prefix and unknown lookahead
+                    {ALT: () =>  this.SUBRULE(this.PredefinedType)},
+                    {ALT: () =>  this.SUBRULE(this.TypeReference)},
+                    {ALT: () =>  this.SUBRULE(this.ObjectType)},
+                    {ALT: () =>  this.SUBRULE(this.TupleType)},
+                    {ALT: () =>  this.SUBRULE(this.TypeQuery)}
                 ], "a Primary or Union type")
-            // @formatter:on
 
             // ArrayType:
             //    PrimaryType [no LineTerminator here] '[' ']'
@@ -332,19 +407,30 @@ namespace jes.grammar {
             // allowing 'string string string [] [] []' for example
             // this only allows array '[]' as a suffix
             this.MANY(() => {
-                this.CONSUME(LSquare)
-                this.CONSUME(RSquare)
+                brackets.push(
+                    this.CONSUME(LSquare))
+                brackets.push(
+                    this.CONSUME(RSquare))
             })
+
+            return PT(PrimaryType, CHILDREN(type, brackets, SYNTAX_BOX(brackets)))
         })
 
 
         // ParenthesizedType:
         //    '(' Type ')'
-        public ParenthesizedType = this.RULE("ParenthesizedType", () => {
-            this.CONSUME(LParen)
-            this.SUBRULE(this.Type)
-            this.CONSUME(RParen)
-        })
+        //public ParenthesizedType = this.RULE("ParenthesizedType", () => {
+        //    let brackets = []
+        //
+        //    brackets.push(
+        //        this.CONSUME(LParen))
+        //    let type =
+        //        this.SUBRULE(this.Type)
+        //    brackets.push(
+        //        this.CONSUME(RParen))
+        //
+        //    return PT(ParenthesizedType, CHILDREN(type, SYNTAX_BOX(brackets)))
+        //})
 
 
         // PredefinedType:
@@ -354,38 +440,50 @@ namespace jes.grammar {
         //    string
         //    void
         public PredefinedType = this.RULE("PredefinedType", () => {
-            // @formatter:off
-            this.OR([
-                // TODO: consider reducing number of keywords by consuming these predefined types as simple identifiers
-                {ALT: () =>  this.CONSUME(AnyToken)},
-                {ALT: () =>  this.CONSUME(NumberToken)},
-                {ALT: () =>  this.CONSUME(BooleanToken)},
-                {ALT: () =>  this.CONSUME(StringToken)},
-                {ALT: () =>  this.CONSUME(VoidToken)},
-                ], "a predefined type")
-            // @formatter:on
+            return PT(PredefinedType, CHILDREN(
+                this.OR([
+                    // TODO: consider reducing number of keywords by consuming these predefined types as simple identifiers
+                    {ALT: () =>  this.CONSUME(AnyToken)},
+                    {ALT: () =>  this.CONSUME(NumberToken)},
+                    {ALT: () =>  this.CONSUME(BooleanToken)},
+                    {ALT: () =>  this.CONSUME(StringToken)},
+                    {ALT: () =>  this.CONSUME(VoidToken)},
+                ], "a predefined type")))
         })
 
 
         // TypeReference:
         //    TypeName [no LineTerminator here] TypeArguments?
         public TypeReference = this.RULE("TypeReference", () => {
-            this.SUBRULE(this.QualifiedName)
+            let qn, typeArgs = undefined
+
+            qn =
+                this.SUBRULE(this.QualifiedName)
             // [no LineTerminator here] should be implemented as parts of a later checks phase
             this.OPTION(() => {
-                this.SUBRULE(this.TypeArguments)
+                typeArgs =
+                    this.SUBRULE(this.TypeArguments)
             })
+
+            return PT(TypeReference, CHILDREN(qn, typeArgs))
         })
 
 
         // ObjectType:
         //    '{' TypeBody? '}'
         public ObjectType = this.RULE("ObjectType", () => {
-            this.CONSUME(LCurly)
+            let body = undefined, brackets = []
+
+            brackets.push(
+                this.CONSUME(LCurly))
             this.OPTION(() => {
-                this.SUBRULE(this.TypeBody)
+                body =
+                    this.SUBRULE(this.TypeBody)
             })
-            this.CONSUME(RCurly)
+            brackets.push(
+                this.CONSUME(RCurly))
+
+            return PT(ObjectType, CHILDREN(body, SYNTAX_BOX(brackets)))
         })
 
 
@@ -396,14 +494,20 @@ namespace jes.grammar {
         //    TypeMember
         //    TypeMemberList ';' TypeMember
         public TypeBody = this.RULE("TypeBody", () => {
+            let semicolons = [], typeMembers = []
+
             this.MANY(() => {
-                this.SUBRULE(this.TypeMember)
-                this.CONSUME(Semicolon)
+                typeMembers.push(
+                    this.SUBRULE(this.TypeMember))
+                semicolons.push(
+                    this.CONSUME(Semicolon))
             })
             // DIFF last semiColon is currently mandatory
             //this.OPTION(() => {
             //    this.CONSUME(Semicolon)
             //})
+
+            return PT(TypeBody, CHILDREN(TypeMember, SYNTAX_BOX(semicolons)))
         })
 
 
@@ -414,14 +518,12 @@ namespace jes.grammar {
         //    IndexSignature
         //    MethodSignature
         public TypeMember = this.RULE("TypeMember", () => {
-            // @formatter:off
-            this.OR([
+            return this.OR([
                 {ALT: () =>  this.SUBRULE(this.PropertySignatureOrMethodSignature)},
                 {ALT: () =>  this.SUBRULE(this.CallSignature)},
                 {ALT: () =>  this.SUBRULE(this.ConstructSignature)},
                 {ALT: () =>  this.SUBRULE(this.IndexSignature)},
-                ], "a Type Member")
-            // @formatter:on
+            ], "a Type Member")
         })
 
 
@@ -435,43 +537,73 @@ namespace jes.grammar {
         // TupleElementType:
         //    Type
         public TupleType = this.RULE("TupleType", () => {
-            this.CONSUME(LSquare)
-            this.MANY_SEP(Comma, () => {
-                this.SUBRULE(this.Type)
-            })
-            this.CONSUME(RSquare)
+            let commas, brackets = [], types = []
+
+            brackets.push(
+                this.CONSUME(LSquare))
+            commas =
+                this.MANY_SEP(Comma, () => {
+                    types.push(
+                        this.SUBRULE(this.Type))
+                })
+            brackets.push(
+                this.CONSUME(RSquare))
+
+            return PT(TupleType, CHILDREN(types, SYNTAX_BOX(brackets.concat(commas))))
         })
 
 
         // FunctionType:
         //    TypeParameters? ( ParameterList? ) => Type
         public FunctionType = this.RULE("FunctionType", () => {
+            let typeParams = undefined, paramList = undefined, type, sb = []
+
             this.OPTION(() => {
-                this.SUBRULE(this.TypeParameters)
+                typeParams =
+                    this.SUBRULE(this.TypeParameters)
             })
-            this.CONSUME(LParen)
+            sb.push(
+                this.CONSUME(LParen))
             this.OPTION2(() => {
-                this.SUBRULE(this.ParameterList)
+                paramList =
+                    this.SUBRULE(this.ParameterList)
             })
-            this.CONSUME(RParen)
-            this.CONSUME(FatArrow)
-            this.SUBRULE(this.Type)
+            sb.push(
+                this.CONSUME(RParen))
+            sb.push(
+                this.CONSUME(FatArrow))
+            type =
+                this.SUBRULE(this.Type)
+
+            return PT(FunctionType, CHILDREN(typeParams, paramList, type, SYNTAX_BOX(sb)))
         })
 
 
         // ConstructorType:
         //    'new' TypeParameters? ( ParameterList? ) '=>' Type
         public ConstructorType = this.RULE("ConstructorType", () => {
-            this.CONSUME(NewToken)
-            this.SUBRULE(this.FunctionType)
+            let funcType, sb = []
+
+            sb.push(
+                this.CONSUME(NewToken))
+            funcType =
+                this.SUBRULE(this.FunctionType)
+
+            return PT(ConstructorType, CHILDREN(funcType, SYNTAX_BOX(sb)))
         })
 
 
         // TypeQuery:
         //    'typeof' TypeQueryExpression
         public TypeQuery = this.RULE("TypeQuery", () => {
-            this.CONSUME(TypeofToken)
-            this.SUBRULE(this.QualifiedName)
+            let qn, sb = []
+
+            sb.push(
+                this.CONSUME(TypeofToken))
+            qn =
+                this.SUBRULE(this.QualifiedName)
+
+            return PT(TypeQuery, CHILDREN(qn, SYNTAX_BOX(sb)))
         })
 
 
@@ -479,20 +611,25 @@ namespace jes.grammar {
         //    PropertyName '?'? TypeAnnotation?
         //
         // MethodSignature:
-        //    PropertyName '?'? CallSignature //TODO: is CallSignature optional? it is implemented as optional right now
+        //    PropertyName '?'? CallSignature // TODO: is CallSignature optional? it is implemented as optional right now
         public PropertySignatureOrMethodSignature = this.RULE("PropertySignatureOrMethodSignature", () => {
-            this.SUBRULE(this.PropertyName)
+            let propName, typeAnnoOrCallSig = undefined, sb = []
+
+            propName =
+                this.SUBRULE(this.PropertyName)
             this.OPTION(() => {
-                this.CONSUME(Question)
+                sb.push(
+                    this.CONSUME(Question))
             })
             this.OPTION2(() => {
-                // @formatter:off
-                this.OR([
-                    {ALT: () =>  this.SUBRULE(this.TypeAnnotation)},
-                    {ALT: () =>  this.SUBRULE(this.CallSignature)},
-                    ], "a PropertyName")
-                // @formatter:on
+                typeAnnoOrCallSig =
+                    this.OR([
+                        {ALT: () =>  this.SUBRULE(this.TypeAnnotation)},
+                        {ALT: () =>  this.SUBRULE(this.CallSignature)},
+                    ], "a TypeAnnotation or CallSignature")
             })
+
+            return PT(PropertySignatureOrMethodSignature, CHILDREN(propName, typeAnnoOrCallSig, SYNTAX_BOX(sb)))
         })
 
 
@@ -501,30 +638,38 @@ namespace jes.grammar {
         //    StringLiteral
         //    NumericLiteral
         public PropertyName = this.RULE("PropertyName", () => {
-            // @formatter:off
-            this.OR([
-                {ALT: () =>  this.CONSUME(Identifier)},
-                {ALT: () =>  this.CONSUME(StringLiteral)},
-                {ALT: () =>  this.CONSUME(NumberLiteral)},
-                ], "a PropertyName")
-            // @formatter:on
+            return PT(PropertyName, CHILDREN(
+                this.OR([
+                    {ALT: () =>  this.CONSUME(Identifier)},
+                    {ALT: () =>  this.CONSUME(StringLiteral)},
+                    {ALT: () =>  this.CONSUME(NumberLiteral)},
+                ], "a PropertyName")))
         })
 
 
         // CallSignature:
         //    TypeParameters? '(' ParameterList? ')' TypeAnnotation?
         public CallSignature = this.RULE("CallSignature", () => {
+            let typeParams = undefined, paramList = undefined, typeAnno = undefined, sb = []
+
             this.OPTION(() => {
-                this.SUBRULE(this.TypeParameters)
+                typeParams =
+                    this.SUBRULE(this.TypeParameters)
             })
-            this.CONSUME(LParen)
+            sb.push(
+                this.CONSUME(LParen))
             this.OPTION2(() => {
-                this.SUBRULE(this.ParameterList)
+                paramList =
+                    this.SUBRULE(this.ParameterList)
             })
-            this.CONSUME(RParen)
+            sb.push(
+                this.CONSUME(RParen))
             this.OPTION3(() => {
-                this.SUBRULE(this.TypeAnnotation)
+                typeAnno =
+                    this.SUBRULE(this.TypeAnnotation)
             })
+
+            return PT(CallSignature, CHILDREN(typeParams, paramList, typeAnno, SYNTAX_BOX(sb)))
         })
 
 
@@ -537,15 +682,18 @@ namespace jes.grammar {
         //    OptionalParameterList ',' RestParameter
         //    RequiredParameterList ',' OptionalParameterList ',' RestParameter
         public ParameterList = this.RULE("ParameterList", () => {
-            this.AT_LEAST_ONE_SEP(Comma, () => {
-                // @formatter:off
-            this.OR([
-                {ALT: () =>  this.SUBRULE(this.RequiredOrOptionalParameter)},
-                {ALT: () =>  this.SUBRULE(this.RestParameter)},
-                // of optional Param
-                ], "a Parameter signature")
-            // @formatter:on
-            }, "A Parameter signature")
+            let params = [], sb
+
+            sb =
+                this.AT_LEAST_ONE_SEP(Comma, () => {
+                    params.push(
+                        this.OR([
+                            {ALT: () =>  this.SUBRULE(this.RequiredOrOptionalParameter)},
+                            {ALT: () =>  this.SUBRULE(this.RestParameter)},
+                        ], "a Parameter signature"))
+                }, "A Parameter List")
+
+            return PT(ParameterList, CHILDREN(params, SYNTAX_BOX(sb)))
         })
 
 
@@ -558,38 +706,60 @@ namespace jes.grammar {
         //    AccessibilityModifier? Identifier TypeAnnotation? Initialiser
         //    Identifier ? ':' StringLiteral // DIFF this variation is not supported yet
         public RequiredOrOptionalParameter = this.RULE("RequiredOrOptionalParameter", () => {
+            let accessMod = undefined, ident, question = undefined, typeAnno = undefined
+
             this.OPTION(() => {
-                this.SUBRULE(this.AccessibilityModifier)
+                accessMod =
+                    this.SUBRULE(this.AccessibilityModifier)
             })
-            this.CONSUME(Identifier)
+            ident =
+                this.CONSUME(Identifier)
+
             this.OPTION2(() => {
-                this.CONSUME(Question)
+                question =
+                    this.CONSUME(Question)
             })
             this.OPTION3(() => {
-                this.SUBRULE(this.TypeAnnotation)
+                typeAnno =
+                    this.SUBRULE(this.TypeAnnotation)
             })
 
             // initializer not permitted in d.ts
             // see 3.8.2.2 Parameter List in the spec
+            return PT(RequiredOrOptionalParameter, CHILDREN(accessMod, ident, question, typeAnno, SYNTAX_BOX([ident, question])))
         })
 
 
         // RestParameter:
         //    '...' Identifier TypeAnnotation?
         public RestParameter = this.RULE("RestParameter", () => {
-            this.CONSUME(DotDotDot)
-            this.CONSUME(Identifier)
+            let dots, ident, typeAnno = undefined
+
+            dots =
+                this.CONSUME(DotDotDot)
+            ident =
+                this.CONSUME(Identifier)
+
             this.OPTION(() => {
-                this.SUBRULE(this.TypeAnnotation)
+                typeAnno =
+                    this.SUBRULE(this.TypeAnnotation)
             })
+
+            return PT(RestParameter, CHILDREN(ident, typeAnno, SYNTAX_BOX([dots, ident])))
         })
 
 
         // ConstructSignature:
         //    'new' TypeParameters? '(' ParameterList? ')' TypeAnnotation?
         public ConstructSignature = this.RULE("ConstructSignature", () => {
-            this.CONSUME(NewToken)
-            this.SUBRULE(this.CallSignature)
+            let newTok, callSig
+
+            newTok =
+                this.CONSUME(NewToken)
+            callSig =
+                this.SUBRULE(this.CallSignature)
+
+            return PT(ConstructSignature, CHILDREN(callSig, SYNTAX_BOX([newTok])))
         })
 
 
@@ -598,13 +768,12 @@ namespace jes.grammar {
         //    'private'
         //    'protected'
         public AccessibilityModifier = this.RULE("AccessibilityModifier", () => {
-            // @formatter:off
-            this.OR([
-                {ALT: () =>  this.CONSUME(PublicToken)},
-                {ALT: () =>  this.CONSUME(PrivateToken)},
-                {ALT: () =>  this.CONSUME(ProtectedToken)}
-                ], "an accessibility Modifier")
-            // @formatter:on
+            return PT(AccessibilityModifier, CHILDREN(
+                this.OR([
+                    {ALT: () =>  this.CONSUME(PublicToken)},
+                    {ALT: () =>  this.CONSUME(PrivateToken)},
+                    {ALT: () =>  this.CONSUME(ProtectedToken)}
+                ], "an accessibility Modifier")))
         })
 
 
@@ -612,34 +781,63 @@ namespace jes.grammar {
         //    '[' Identifier ':' string ']' TypeAnnotation
         //    '[' Identifier ':' number ']' TypeAnnotation
         public IndexSignature = this.RULE("IndexSignature", () => {
-            this.CONSUME(LSquare)
-            this.CONSUME(Identifier)
-            this.CONSUME(Colon)
-            // @formatter:off
-            this.OR([
-                {ALT: () =>  this.CONSUME(StringToken)},
-                {ALT: () =>  this.CONSUME(NumberToken)}
-                ], "'string' or 'number'")
-            // @formatter:on
-            this.CONSUME(RSquare)
-            this.SUBRULE(this.TypeAnnotation)
+            let lSq, ident, colon, strOrNum, rSq, typeAnno
+
+            lSq =
+                this.CONSUME(LSquare)
+            ident =
+                this.CONSUME(Identifier)
+            colon =
+                this.CONSUME(Colon)
+            strOrNum =
+                // @formatter:off
+                this.OR([
+                    {ALT: () =>  this.CONSUME(StringToken)},
+                    {ALT: () =>  this.CONSUME(NumberToken)}
+                    ], "'string' or 'number'")
+                // @formatter:on
+            rSq =
+                this.CONSUME(RSquare)
+            typeAnno =
+                this.SUBRULE(this.TypeAnnotation)
+
+            return PT(IndexSignature,
+                CHILDREN(ident, typeAnno,
+                    SYNTAX_BOX([lSq, ident, colon, strOrNum, rSq])))
         })
 
 
         // TypeAliasDeclaration:
         //    'type' Identifier '=' Type ';'
         public TypeAliasDeclaration = this.RULE("TypeAliasDeclaration", () => {
-            this.CONSUME(TypeToken)
-            this.CONSUME(Identifier)
-            this.CONSUME(Equals)
-            this.SUBRULE(this.Type)
-            this.CONSUME(Semicolon)
+            let typeTok, ident, eq, type, semicolon
+
+            typeTok =
+                this.CONSUME(TypeToken)
+            ident =
+                this.CONSUME(Identifier)
+            eq =
+                this.CONSUME(Equals)
+            type =
+                this.SUBRULE(this.Type)
+            semicolon =
+                this.CONSUME(Semicolon)
+
+            return PT(TypeAliasDeclaration,
+                CHILDREN(ident, type,
+                    SYNTAX_BOX([typeTok, ident, eq, semicolon])))
         })
 
 
         public TypeAnnotation = this.RULE("TypeAnnotation", () => {
-            this.CONSUME(Colon)
-            this.SUBRULE(this.Type)
+            let colon, type
+
+            colon =
+                this.CONSUME(Colon)
+            type =
+                this.SUBRULE(this.Type)
+
+            return PT(TypeAnnotation, CHILDREN(type, SYNTAX_BOX([colon])))
         })
 
 
@@ -648,23 +846,41 @@ namespace jes.grammar {
         // InterfaceDeclaration:
         //    'interface' Identifier TypeParameters? InterfaceExtendsClause? ObjectType
         public InterfaceDeclaration = this.RULE("InterfaceDeclaration", () => {
-            this.CONSUME(InterfaceToken)
-            this.CONSUME(Identifier)
+            let interfaceTok, ident, typeParams = undefined, extendsClause = undefined, objType
+
+            interfaceTok =
+                this.CONSUME(InterfaceToken)
+            ident =
+                this.CONSUME(Identifier)
+
             this.OPTION(() => {
-                this.SUBRULE(this.TypeParameters)
+                typeParams =
+                    this.SUBRULE(this.TypeParameters)
             })
             this.OPTION2(() => {
-                this.SUBRULE(this.InterfaceExtendsClause)
+                extendsClause =
+                    this.SUBRULE(this.InterfaceExtendsClause)
             })
-            this.SUBRULE(this.ObjectType)
+            objType =
+                this.SUBRULE(this.ObjectType)
+
+            return PT(InterfaceDeclaration,
+                CHILDREN(ident, typeParams, extendsClause, objType,
+                    SYNTAX_BOX([interfaceTok, ident])))
         })
 
 
         // InterfaceExtendsClause:
         //    'extends' ClassOrInterfaceTypeList
         public InterfaceExtendsClause = this.RULE("InterfaceExtendsClause", () => {
-            this.CONSUME(ExtendsToken)
-            this.SUBRULE(this.ClassOrInterfaceTypeList)
+            let extendsTok, typeList
+
+            extendsTok =
+                this.CONSUME(ExtendsToken)
+            typeList =
+                this.SUBRULE(this.ClassOrInterfaceTypeList)
+
+            return PT(InterfaceExtendsClause, CHILDREN(typeList, SYNTAX_BOX([extendsTok])))
         })
 
 
@@ -675,9 +891,14 @@ namespace jes.grammar {
         // ClassOrInterfaceType:
         //    TypeReference
         public ClassOrInterfaceTypeList = this.RULE("ClassOrInterfaceTypeList", () => {
-            this.MANY_SEP(Comma, () => {
-                this.SUBRULE(this.TypeReference)
+            let commas, typeRefs = []
+
+            commas = this.MANY_SEP(Comma, () => {
+                typeRefs.push(
+                    this.SUBRULE(this.TypeReference))
             })
+
+            return PT(ClassOrInterfaceTypeList, CHILDREN(typeRefs, SYNTAX_BOX(commas)))
         })
 
 
@@ -686,13 +907,19 @@ namespace jes.grammar {
         // ClassHeritage:
         //    ClassExtendsClause? ImplementsClause?
         public ClassHeritage = this.RULE("ClassHeritage", () => {
+            let extendsClause = undefined, implementsClause = undefined
+
             this.OPTION(() => {
-                this.SUBRULE(this.ClassExtendsClause)
+                extendsClause =
+                    this.SUBRULE(this.ClassExtendsClause)
             })
 
             this.OPTION2(() => {
-                this.SUBRULE(this.ImplementsClause)
+                implementsClause =
+                    this.SUBRULE(this.ImplementsClause)
             })
+
+            return PT(ClassHeritage, CHILDREN(extendsClause, implementsClause))
         })
 
 
@@ -701,16 +928,26 @@ namespace jes.grammar {
         // ClassType:
         //    TypeReference
         public ClassExtendsClause = this.RULE("ClassExtendsClause", () => {
-            this.CONSUME(ExtendsToken)
-            this.SUBRULE(this.TypeReference)
+            let extendsTok, typeRef
+
+            extendsTok = this.CONSUME(ExtendsToken)
+            typeRef = this.SUBRULE(this.TypeReference)
+
+            return PT(ClassExtendsClause, CHILDREN(typeRef, SYNTAX_BOX([extendsTok])))
         })
 
 
         // ImplementsClause:
         //    'implements' ClassOrInterfaceTypeList
         public ImplementsClause = this.RULE("ImplementsClause", () => {
-            this.CONSUME(ImplementsToken)
-            this.SUBRULE(this.ClassOrInterfaceTypeList)
+            let implementsTok, typeList
+
+            implementsTok =
+                this.CONSUME(ImplementsToken)
+            typeList =
+                this.SUBRULE(this.ClassOrInterfaceTypeList)
+
+            return PT(ImplementsClause, CHILDREN(typeList, SYNTAX_BOX([implementsTok])))
         })
 
 
@@ -720,17 +957,29 @@ namespace jes.grammar {
         // EnumDeclaration:
         //    const? 'enum' Identifier '{' EnumBody? '}'
         public AmbientEnumDeclaration = this.RULE("AmbientEnumDeclaration", () => {
+            let constTok = undefined, enumTok, ident, lCurly, enumBody = undefined, rCurly
 
             this.OPTION(() => {
-                this.CONSUME(ConstToken)
+                constTok =
+                    this.CONSUME(ConstToken)
             })
-            this.CONSUME(EnumToken)
-            this.CONSUME(Identifier)
-            this.CONSUME(LCurly)
+            enumTok =
+                this.CONSUME(EnumToken)
+            ident =
+                this.CONSUME(Identifier)
+            lCurly =
+                this.CONSUME(LCurly)
+
             this.OPTION2(() => {
-                this.SUBRULE(this.EnumBody)
+                enumBody =
+                    this.SUBRULE(this.EnumBody)
             })
-            this.CONSUME(RCurly)
+            rCurly =
+                this.CONSUME(RCurly)
+
+            return PT(AmbientEnumDeclaration,
+                CHILDREN(ConstToken, Identifier, enumBody,
+                    SYNTAX_BOX([constTok, enumTok, ident, lCurly, rCurly])))
         })
 
 
@@ -741,12 +990,20 @@ namespace jes.grammar {
         //    EnumMember
         //    EnumMemberList ',' EnumMember
         public EnumBody = this.RULE("EnumBody", () => {
-            this.MANY_SEP(Comma, () => {
-                this.SUBRULE(this.EnumMember)
-            })
+            let commas, members = []
+
+            commas =
+                this.MANY_SEP(Comma, () => {
+                    members.push(
+                        this.SUBRULE(this.EnumMember))
+                })
+
             this.OPTION(() => {
-                this.CONSUME(Comma)
+                commas.push(this.CONSUME(Comma))
             })
+
+            return PT(EnumBody,
+                CHILDREN(members, SYNTAX_BOX(commas)))
         })
 
 
@@ -754,19 +1011,35 @@ namespace jes.grammar {
         //    PropertyName
         //    PropertyName '=' EnumValue
         public EnumMember = this.RULE("EnumMember", () => {
-            this.SUBRULE(this.PropertyName)
+            let propName
+
+            propName =
+                this.SUBRULE(this.PropertyName)
+
             // DIFF: no <ENUM '=' EnumValue>, maybe support only simple expressions?
+            return PT(EnumMember, CHILDREN(propName))
         })
 
 
         // ImportDeclaration:
         //    'import' Identifier '=' EntityName ';'
         public ImportDeclaration = this.RULE("ImportDeclaration", () => {
-            this.CONSUME(ImportToken)
-            this.CONSUME(Identifier)
-            this.CONSUME(Equals)
-            this.SUBRULE(this.QualifiedName) // EntityName
-            this.CONSUME(Semicolon)
+            let importTok, ident, eq, qn, semicolon
+
+            importTok =
+                this.CONSUME(ImportToken)
+            ident =
+                this.CONSUME(Identifier)
+            eq =
+                this.CONSUME(Equals)
+            qn =
+                this.SUBRULE(this.QualifiedName) // EntityName
+            semicolon =
+                this.CONSUME(Semicolon)
+
+            return PT(ImportDeclaration,
+                CHILDREN(ident, qn,
+                    SYNTAX_BOX([importTok, ident, eq, semicolon])))
         })
 
 
@@ -779,24 +1052,32 @@ namespace jes.grammar {
         //    'export'? AmbientDeclaration
         //    'export'? ExternalImportDeclaration
         public DeclarationElement = this.RULE("DeclarationElement", () => {
-            // @formatter:off
-            this.OR([
-                {WHEN: isExportAssignment, THEN_DO: () =>  this.SUBRULE(this.ExportAssignment)},
-                // DIFF - need better lookahead to distinguish between AmbientExternalModuleDeclaration and AmbientModuleDeclaration
-                //{WHEN: isAmbientExternalModuleDeclaration , THEN_DO: () =>  this.SUBRULE(this.AmbientExternalModuleDeclaration)},
-                {WHEN: isOtherDeclarationElement, THEN_DO: () => {
-                    this.OPTION(() => {
-                        this.CONSUME(ExportToken)
-                    })
-                    this.OR2([
-                        {ALT: () =>  this.SUBRULE(this.InterfaceDeclaration)},
-                        {ALT: () =>  this.SUBRULE(this.TypeAliasDeclaration)},
-                        {ALT: () =>  this.SUBRULE(this.ImportDeclaration)},
-                        {ALT: () =>  this.SUBRULE(this.AmbientDeclaration)}
-                        //{ALT: () =>  this.SUBRULE(this.ExternalImportDeclaration)} // DIFF not currently supported
-                        ], "Interface TypeAlias ImportDec AmbientDec or ExternalImportDec")}}
-                ], "a DeclarationElement")
-            // @formatter:on
+            let innerDecElement, exportTok = undefined
+
+            innerDecElement =
+                // @formatter:off
+                this.OR([
+                    {WHEN: isExportAssignment, THEN_DO: () => this.SUBRULE(this.ExportAssignment)},
+                    // DIFF - need better lookahead to distinguish between AmbientExternalModuleDeclaration and AmbientModuleDeclaration
+                    //{WHEN: isAmbientExternalModuleDeclaration , THEN_DO: () =>  this.SUBRULE(this.AmbientExternalModuleDeclaration)},
+                    {WHEN: isOtherDeclarationElement, THEN_DO: () => {
+                        this.OPTION(() => {
+                            exportTok =
+                                this.CONSUME(ExportToken)
+                        })
+                        return this.OR2([
+                            {ALT: () => this.SUBRULE(this.InterfaceDeclaration)},
+                            {ALT: () => this.SUBRULE(this.TypeAliasDeclaration)},
+                            {ALT: () => this.SUBRULE(this.ImportDeclaration)},
+                            {ALT: () => this.SUBRULE(this.AmbientDeclaration)}
+                            //{ALT: () => this.SUBRULE(this.ExternalImportDeclaration)} // DIFF not currently supported
+                            ], "Interface TypeAlias ImportDec AmbientDec or ExternalImportDec")}}
+                    ], "a DeclarationElement")
+                // @formatter:on
+
+            return PT(ImportDeclaration,
+                CHILDREN(exportTok, innerDecElement,
+                    SYNTAX_BOX([exportTok])))
         })
 
 
@@ -814,20 +1095,40 @@ namespace jes.grammar {
         // ExternalModuleReference:
         //    'require' '(' StringLiteral ')'
         public ExternalModuleReference = this.RULE("ExternalModuleReference", () => {
-            this.CONSUME(RequireToken)
-            this.CONSUME(LParen)
-            this.CONSUME(StringLiteral)
-            this.CONSUME(RParen)
+            let require, lParen, str, rParen
+
+            require =
+                this.CONSUME(RequireToken)
+            lParen =
+                this.CONSUME(LParen)
+            str =
+                this.CONSUME(StringLiteral)
+            rParen =
+                this.CONSUME(RParen)
+
+            return PT(ExternalModuleReference,
+                CHILDREN(str,
+                    SYNTAX_BOX([require, lParen, str, rParen])))
         })
 
 
         // ExportAssignment:
         //    'export' '=' Identifier ';'
         public ExportAssignment = this.RULE("ExportAssignment", () => {
-            this.CONSUME(ExportToken)
-            this.CONSUME(Equals)
-            this.CONSUME(Identifier)
-            this.CONSUME(Semicolon)
+            let exportTok, eq, ident, semicolon
+
+            exportTok =
+                this.CONSUME(ExportToken)
+            eq =
+                this.CONSUME(Equals)
+            ident =
+                this.CONSUME(Identifier)
+            semicolon =
+                this.CONSUME(Semicolon)
+
+            return PT(ExportAssignment,
+                CHILDREN(ident,
+                    SYNTAX_BOX([exportTok, eq, ident, semicolon])))
         })
 
 
@@ -840,53 +1141,93 @@ namespace jes.grammar {
         //    'declare' AmbientEnumDeclaration
         //    'declare' AmbientModuleDeclaration
         public AmbientDeclaration = this.RULE("AmbientDeclaration", () => {
-            this.CONSUME(DeclareToken)
-            // @formatter:off
-            this.OR([
-                {ALT: () =>  this.SUBRULE(this.AmbientVariableDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientFunctionDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientClassDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientEnumDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientModuleDeclaration)},
+            let declareTok, declaration
+
+            declareTok = this.CONSUME(DeclareToken)
+            declaration =
+                this.OR([
+                    {ALT: () =>  this.SUBRULE(this.AmbientVariableDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientFunctionDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientClassDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientEnumDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientModuleDeclaration)},
                 ], "an AmbientDeclaration")
-            // @formatter:on
+
+            return PT(AmbientDeclaration,
+                CHILDREN(declaration,
+                    SYNTAX_BOX([declareTok])))
         })
 
 
         // AmbientVariableDeclaration:
         //   'var' Identifier TypeAnnotation? ';'
         public AmbientVariableDeclaration = this.RULE("AmbientVariableDeclaration", () => {
-            this.CONSUME(VarToken)
-            this.CONSUME(Identifier)
+            let varTok, ident, typeAnno = undefined, semiColon
+
+            varTok =
+                this.CONSUME(VarToken)
+            ident =
+                this.CONSUME(Identifier)
+
             this.OPTION(() => {
-                this.SUBRULE(this.TypeAnnotation)
+                typeAnno =
+                    this.SUBRULE(this.TypeAnnotation)
             })
-            this.CONSUME(Semicolon)
+            semiColon =
+                this.CONSUME(Semicolon)
+
+            return PT(AmbientVariableDeclaration,
+                CHILDREN(ident, typeAnno,
+                    SYNTAX_BOX([varTok, ident, semiColon])))
         })
 
 
         // AmbientFunctionDeclaration:
         //    'function' Identifier CallSignature ';'
         public AmbientFunctionDeclaration = this.RULE("AmbientFunctionDeclaration", () => {
-            this.CONSUME(FunctionToken)
-            this.CONSUME(Identifier)
-            this.SUBRULE(this.CallSignature)
-            this.CONSUME(Semicolon)
+            let func, ident, callSig, semiColon
+
+            func =
+                this.CONSUME(FunctionToken)
+            ident =
+                this.CONSUME(Identifier)
+            callSig =
+                this.SUBRULE(this.CallSignature)
+            semiColon =
+                this.CONSUME(Semicolon)
+
+            return PT(AmbientFunctionDeclaration,
+                CHILDREN(ident, callSig,
+                    SYNTAX_BOX([func, ident, semiColon])))
         })
 
 
         // AmbientClassDeclaration:
         //    'class' Identifier TypeParameters? ClassHeritage '{' AmbientClassBody '}'
         public AmbientClassDeclaration = this.RULE("AmbientClassDeclaration", () => {
-            this.CONSUME(ClassToken)
-            this.CONSUME(Identifier)
+            let classTok, ident, typeParam = undefined, heritage, lCurly, body, rCurly
+
+            classTok =
+                this.CONSUME(ClassToken)
+            ident =
+                this.CONSUME(Identifier)
+
             this.OPTION(() => {
-                this.SUBRULE(this.TypeParameters)
+                typeParam =
+                    this.SUBRULE(this.TypeParameters)
             })
-            this.SUBRULE(this.ClassHeritage)
-            this.CONSUME(LCurly)
-            this.SUBRULE(this.AmbientClassBody)
-            this.CONSUME(RCurly)
+            heritage =
+                this.SUBRULE(this.ClassHeritage)
+            lCurly =
+                this.CONSUME(LCurly)
+            body =
+                this.SUBRULE(this.AmbientClassBody)
+            rCurly =
+                this.CONSUME(RCurly)
+
+            return PT(AmbientClassDeclaration,
+                CHILDREN(ident, typeParam, heritage, body,
+                    SYNTAX_BOX([classTok, ident, lCurly, rCurly])))
         })
 
 
@@ -897,9 +1238,15 @@ namespace jes.grammar {
         //    AmbientClassBodyElement
         //    AmbientClassBodyElements AmbientClassBodyElement
         public AmbientClassBody = this.RULE("AmbientClassBody", () => {
+            let elements = []
+
             this.MANY(() => {
-                this.SUBRULE(this.AmbientClassBodyElement)
+                elements.push(
+                    this.SUBRULE(this.AmbientClassBodyElement))
             })
+
+            return PT(AmbientClassBody,
+                CHILDREN(elements))
         })
 
 
@@ -908,26 +1255,36 @@ namespace jes.grammar {
         //    AmbientPropertyMemberDeclaration
         //    IndexSignature
         public AmbientClassBodyElement = this.RULE("AmbientClassBodyElement", () => {
-            // @formatter:off
-            this.OR([
+            return this.OR([
                 {ALT: () =>  this.SUBRULE(this.AmbientConstructorDeclaration)},
                 {ALT: () =>  this.SUBRULE(this.AmbientPropertyMemberDeclaration)},
                 {ALT: () =>  this.SUBRULE(this.IndexSignature)},
-                ], "an AmbientClassBodyElement")
-            // @formatter:on
+            ], "an AmbientClassBodyElement")
         })
 
 
         // AmbientConstructorDeclaration:
         //    'constructor' '(' ParameterList? ')' ';'
         public AmbientConstructorDeclaration = this.RULE("AmbientConstructorDeclaration", () => {
-            this.CONSUME(ConstructorToken)
-            this.CONSUME(LParen)
+            let constructorTok, lParen, paramList = undefined, rParen, semicolon
+
+            constructorTok =
+                this.CONSUME(ConstructorToken)
+            lParen =
+                this.CONSUME(LParen)
+
             this.OPTION(() => {
-                this.SUBRULE(this.ParameterList)
+                paramList =
+                    this.SUBRULE(this.ParameterList)
             })
-            this.CONSUME(RParen)
-            this.CONSUME(Semicolon)
+            rParen =
+                this.CONSUME(RParen)
+            semicolon =
+                this.CONSUME(Semicolon)
+
+            return PT(AmbientConstructorDeclaration,
+                CHILDREN(ParameterList,
+                    SYNTAX_BOX([constructorTok, lParen, rParen, semicolon])))
         })
 
 
@@ -935,35 +1292,58 @@ namespace jes.grammar {
         //    AccessibilityModifier? 'static'? PropertyName TypeAnnotation? ';'
         //    AccessibilityModifier? 'static'? PropertyName CallSignature ';'
         public AmbientPropertyMemberDeclaration = this.RULE("AmbientPropertyMemberDeclaration", () => {
+            let accessMod = undefined, staticTok = undefined, propName,
+                typeAnnoOrCallSig = undefined, semicolon
+
             this.OPTION(() => {
-                this.SUBRULE(this.AccessibilityModifier)
+                accessMod =
+                    this.SUBRULE(this.AccessibilityModifier)
             })
             this.OPTION2(() => {
-                this.CONSUME(StaticToken)
+                staticTok =
+                    this.CONSUME(StaticToken)
             })
-            this.SUBRULE(this.PropertyName)
+            propName =
+                this.SUBRULE(this.PropertyName)
+
             this.OPTION3(() => {
-                // @formatter:off
-                this.OR([
-                    {ALT: () =>  this.SUBRULE(this.TypeAnnotation)},
-                    {ALT: () =>  this.SUBRULE(this.CallSignature)},
+                typeAnnoOrCallSig =
+                    this.OR([
+                        {ALT: () => this.SUBRULE(this.TypeAnnotation)},
+                        {ALT: () => this.SUBRULE(this.CallSignature)},
                     ], "TypeAnnotation or CallSignature")
-                    // @formatter:on
             })
-            this.CONSUME(Semicolon)
+            semicolon =
+                this.CONSUME(Semicolon)
+
+            return PT(AmbientPropertyMemberDeclaration,
+                CHILDREN(accessMod, staticTok, propName, typeAnnoOrCallSig,
+                    SYNTAX_BOX([staticTok, semicolon])))
         })
 
 
         // AmbientModuleDeclaration:
         //    'module' IdentifierPath '{' AmbientModuleBody '}'
         public AmbientModuleDeclaration = this.RULE("AmbientModuleDeclaration", () => {
-            this.CONSUME(ModuleToken)
-            this.SUBRULE(this.QualifiedName)
-            this.CONSUME(LCurly)
+            let moduleTok, qn, lCurly, body = undefined, rCurly
+
+            moduleTok =
+                this.CONSUME(ModuleToken)
+            qn =
+                this.SUBRULE(this.QualifiedName)
+            lCurly =
+                this.CONSUME(LCurly)
+
             this.OPTION(() => {
-                this.SUBRULE(this.AmbientModuleBody)
+                body =
+                    this.SUBRULE(this.AmbientModuleBody)
             })
-            this.CONSUME(RCurly)
+            rCurly =
+                this.CONSUME(RCurly)
+
+            return PT(AmbientModuleDeclaration,
+                CHILDREN(qn, body,
+                    SYNTAX_BOX([moduleTok, lCurly, rCurly])))
         })
 
 
@@ -974,9 +1354,14 @@ namespace jes.grammar {
         //    AmbientModuleElement
         //    AmbientModuleElements AmbientModuleElement
         public AmbientModuleBody = this.RULE("AmbientModuleBody", () => {
+            let elements = []
+
             this.MANY(() => {
                 this.SUBRULE(this.AmbientModuleElement)
             })
+
+            return PT(AmbientModuleBody,
+                CHILDREN(elements))
         })
 
 
@@ -989,21 +1374,27 @@ namespace jes.grammar {
         //    export? AmbientModuleDeclaration
         //    export? ImportDeclaration
         public AmbientModuleElement = this.RULE("AmbientModuleElement", () => {
+            let exportTok = undefined, element
+
             this.OPTION(() => {
-                this.CONSUME(ExportToken)
+                exportTok =
+                    this.CONSUME(ExportToken)
             })
 
-            // @formatter:off
-            this.OR([
-                {ALT: () =>  this.SUBRULE(this.AmbientVariableDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientFunctionDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientClassDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.InterfaceDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientEnumDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.AmbientModuleDeclaration)},
-                {ALT: () =>  this.SUBRULE(this.ImportDeclaration)}
+            element =
+                this.OR([
+                    {ALT: () =>  this.SUBRULE(this.AmbientVariableDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientFunctionDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientClassDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.InterfaceDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientEnumDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.AmbientModuleDeclaration)},
+                    {ALT: () =>  this.SUBRULE(this.ImportDeclaration)}
                 ], "an AmbientModuleElement")
-            // @formatter:on
+
+            return PT(AmbientModuleElement,
+                CHILDREN(element,
+                    SYNTAX_BOX([exportTok])))
         })
 
 

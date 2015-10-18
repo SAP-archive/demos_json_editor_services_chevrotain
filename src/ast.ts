@@ -77,7 +77,7 @@ namespace jes.ast {
         }
 
         get actualType():string {
-            return this.actualType
+            return this._actualType
         }
     }
 
@@ -190,8 +190,8 @@ namespace jes.ast {
             super(_parent)
         }
 
-        get name():boolean {
-            return this.name
+        get name():string {
+            return this._name
         }
     }
 
