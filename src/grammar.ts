@@ -1,7 +1,9 @@
 namespace jes.grammar {
 
     import Token = chevrotain.Token
+    import VirtualToken = chevrotain.VirtualToken
     import Lexer = chevrotain.Lexer
+    import PT = jes.parseTree.PT
 
     // ----------------- Lexer -----------------
 
@@ -106,6 +108,66 @@ namespace jes.grammar {
     export const DTSLexer = new Lexer(dtsTokens, true)
 
 
+    export class ParseTreeToken extends VirtualToken {}
+    export class DeclarationSourceFile extends ParseTreeToken {}
+    export class QualifiedName extends ParseTreeToken {}
+    export class TypeParameters extends ParseTreeToken {}
+    export class TypeParameter extends ParseTreeToken {}
+    export class Constraint extends ParseTreeToken {}
+    export class TypeArguments extends ParseTreeToken {}
+    export class Type extends ParseTreeToken {}
+    export class PrimaryOrUnionType extends ParseTreeToken {}
+    export class PrimaryType extends ParseTreeToken {}
+    export class ParenthesizedType extends ParseTreeToken {}
+    export class PredefinedType extends ParseTreeToken {}
+    export class TypeReference extends ParseTreeToken {}
+    export class ObjectType extends ParseTreeToken {}
+    export class TypeBody extends ParseTreeToken {}
+    export class TypeMember extends ParseTreeToken {}
+    export class TupleType extends ParseTreeToken {}
+    export class FunctionType extends ParseTreeToken {}
+    export class ConstructorType extends ParseTreeToken {}
+    export class TypeQuery extends ParseTreeToken {}
+    export class PropertySignatureOrMethodSignature extends ParseTreeToken {}
+    export class PropertyName extends ParseTreeToken {}
+    export class CallSignature extends ParseTreeToken {}
+    export class ParameterList extends ParseTreeToken {}
+    export class RequiredOrOptionalParameter extends ParseTreeToken {}
+    export class RestParameter extends ParseTreeToken {}
+    export class ConstructSignature extends ParseTreeToken {}
+    export class AccessibilityModifier extends ParseTreeToken {}
+    export class IndexSignature extends ParseTreeToken {}
+    export class TypeAliasDeclaration extends ParseTreeToken {}
+    export class TypeAnnotation extends ParseTreeToken {}
+    export class InterfaceDeclaration extends ParseTreeToken {}
+    export class InterfaceExtendsClause extends ParseTreeToken {}
+    export class ClassOrInterfaceTypeList extends ParseTreeToken {}
+    export class ClassHeritage extends ParseTreeToken {}
+    export class ClassExtendsClause extends ParseTreeToken {}
+    export class ImplementsClause extends ParseTreeToken {}
+    export class AmbientEnumDeclaration extends ParseTreeToken {}
+    export class EnumBody extends ParseTreeToken {}
+    export class EnumMember extends ParseTreeToken {}
+    export class ImportDeclaration extends ParseTreeToken {}
+    export class DeclarationElement extends ParseTreeToken {}
+    export class ExternalImportDeclaration extends ParseTreeToken {}
+    export class ExternalModuleReference extends ParseTreeToken {}
+    export class ExportAssignment extends ParseTreeToken {}
+    export class AmbientDeclaration extends ParseTreeToken {}
+    export class AmbientVariableDeclaration extends ParseTreeToken {}
+    export class AmbientFunctionDeclaration extends ParseTreeToken {}
+    export class AmbientClassDeclaration extends ParseTreeToken {}
+    export class AmbientClassBody extends ParseTreeToken {}
+    export class AmbientClassBodyElement extends ParseTreeToken {}
+    export class AmbientConstructorDeclaration extends ParseTreeToken {}
+    export class AmbientPropertyMemberDeclaration extends ParseTreeToken {}
+    export class AmbientModuleDeclaration extends ParseTreeToken {}
+    export class AmbientModuleBody extends ParseTreeToken {}
+    export class AmbientModuleElement extends ParseTreeToken {}
+
+
+    // ------------------------------------------------------------
+
     // ----------------- parser -----------------
     import Parser = chevrotain.Parser
 
@@ -127,9 +189,13 @@ namespace jes.grammar {
         //    DeclarationElement
         //    DeclarationElements DeclarationElement
         public DeclarationSourceFile = this.RULE("DeclarationSourceFile", () => {
+            let declarationElements = []
+
             this.MANY(() => {
-                this.SUBRULE(this.DeclarationElement)
+                declarationElements.push(this.SUBRULE(this.DeclarationElement))
             })
+
+            //return PT()
         })
 
 
@@ -885,7 +951,7 @@ namespace jes.grammar {
                     {ALT: () =>  this.SUBRULE(this.CallSignature)},
                     ], "TypeAnnotation or CallSignature")
                     // @formatter:on
-                })
+            })
             this.CONSUME(Semicolon)
         })
 
