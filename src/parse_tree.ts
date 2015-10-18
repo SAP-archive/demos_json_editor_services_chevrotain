@@ -12,6 +12,7 @@ namespace jes.parseTree {
         constructor(public payload:Token, public children:ParseTree[] = []) {}
     }
 
+
     /**
      * convenience factory for ParseTrees
      *

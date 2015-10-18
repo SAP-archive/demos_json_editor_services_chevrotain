@@ -3,7 +3,8 @@ namespace pudu.ast {
 
     import Token = chevrotain.Token
 
-    export class AstNode {
+
+    export abstract class AstNode {
 
         constructor(protected _parent:AstNode = NIL) {}
 
@@ -50,7 +51,6 @@ namespace pudu.ast {
 
         constructor() {
             super(null)
-            // TODO: class expression as a singleton in TSC 1.6?
             if (this.initialized) {
                 throw Error("Nil Node can only be initialized once")
             }

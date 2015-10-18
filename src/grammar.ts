@@ -149,7 +149,6 @@ namespace jes.grammar {
     export class EnumMember extends ParseTreeToken {}
     export class ImportDeclaration extends ParseTreeToken {}
     export class DeclarationElement extends ParseTreeToken {}
-    export class ExternalImportDeclaration extends ParseTreeToken {}
     export class ExternalModuleReference extends ParseTreeToken {}
     export class ExportAssignment extends ParseTreeToken {}
     export class AmbientDeclaration extends ParseTreeToken {}
@@ -803,13 +802,13 @@ namespace jes.grammar {
 
         // ExternalImportDeclaration:
         //    'import' Identifier '=' ExternalModuleReference ';'
-        public ExternalImportDeclaration = this.RULE("ExternalImportDeclaration", () => {
-            this.CONSUME(ImportToken)
-            this.CONSUME(Identifier)
-            this.CONSUME(Equals)
-            this.SUBRULE(this.ExternalModuleReference)
-            this.CONSUME(Semicolon)
-        })
+        //public ExternalImportDeclaration = this.RULE("ExternalImportDeclaration", () => {
+        //    this.CONSUME(ImportToken)
+        //    this.CONSUME(Identifier)
+        //    this.CONSUME(Equals)
+        //    this.SUBRULE(this.ExternalModuleReference)
+        //    this.CONSUME(Semicolon)
+        //})
 
 
         // ExternalModuleReference:
@@ -1067,12 +1066,12 @@ namespace jes.grammar {
     }
 
 
-    function isAmbientModuleElement():boolean {
-        let la1 = this.LA(1)
-        let la2 = this.LA(2)
-        return isAmbientModuleKeyword(la1) ||
-            la1 instanceof ExportToken && isAmbientModuleKeyword(la2)
-    }
+    //function isAmbientModuleElement():boolean {
+    //    let la1 = this.LA(1)
+    //    let la2 = this.LA(2)
+    //    return isAmbientModuleKeyword(la1) ||
+    //        la1 instanceof ExportToken && isAmbientModuleKeyword(la2)
+    //}
 
 
     function isExportAssignment():boolean {
@@ -1082,11 +1081,11 @@ namespace jes.grammar {
     }
 
 
-    function isAmbientExternalModuleDeclaration():boolean {
-        let la1 = this.LA(1)
-        let la2 = this.LA(2)
-        return la1 instanceof DeclareToken && la2 instanceof ModuleToken
-    }
+    //function isAmbientExternalModuleDeclaration():boolean {
+    //    let la1 = this.LA(1)
+    //    let la2 = this.LA(2)
+    //    return la1 instanceof DeclareToken && la2 instanceof ModuleToken
+    //}
 
 
     // TODO: verify this
@@ -1098,9 +1097,9 @@ namespace jes.grammar {
     }
 
 
-    function isExternalImportDeclaration():boolean {
-        let la1 = this.LA(1)
-        let la2 = this.LA(2)
-        return la1 instanceof ExportToken && la2 instanceof ImportToken
-    }
+    //function isExternalImportDeclaration():boolean {
+    //    let la1 = this.LA(1)
+    //    let la2 = this.LA(2)
+    //    return la1 instanceof ExportToken && la2 instanceof ImportToken
+    //}
 }
