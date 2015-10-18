@@ -1,3 +1,4 @@
+/* tslint:disable:no-use-before-declare */
 namespace pudu.ast {
 
     import Token = chevrotain.Token
