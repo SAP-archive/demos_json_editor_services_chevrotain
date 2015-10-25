@@ -111,10 +111,10 @@ namespace jes.grammar {
     export abstract class ParseTreeToken extends VirtualToken {}
     export abstract class SyntaxBox extends ParseTreeToken {}
 
-    function SYNTAX_BOX(tokens:Token[]):ParseTree {
+    function SYNTAX_BOX(tokens:Token[]):ParseTree | any {
         let tokensCompcat = _.compact(tokens)
         let tokensTrees = _.map(tokensCompcat, (currToken) => PT(currToken))
-        return PT(SyntaxBox, tokensTrees)
+        return _.isEmpty(tokensTrees) ? undefined : PT(SyntaxBox, tokensTrees)
     }
 
     function CHILDREN(...children:any[]):ParseTree[] {
@@ -221,7 +221,7 @@ namespace jes.grammar {
                     this.SUBRULE(this.DeclarationElement))
             })
 
-            return PT(DeclarationSourceFile, declarationElements)
+            return PT(DeclarationSourceFile, CHILDREN(declarationElements))
         })
 
 
@@ -476,6 +476,7 @@ namespace jes.grammar {
 
             brackets.push(
                 this.CONSUME(LCurly))
+
             this.OPTION(() => {
                 body =
                     this.SUBRULE(this.TypeBody)
@@ -507,7 +508,7 @@ namespace jes.grammar {
             //    this.CONSUME(Semicolon)
             //})
 
-            return PT(TypeBody, CHILDREN(TypeMember, SYNTAX_BOX(semicolons)))
+            return PT(TypeBody, CHILDREN(typeMembers, SYNTAX_BOX(semicolons)))
         })
 
 
@@ -613,13 +614,12 @@ namespace jes.grammar {
         // MethodSignature:
         //    PropertyName '?'? CallSignature // TODO: is CallSignature optional? it is implemented as optional right now
         public PropertySignatureOrMethodSignature = this.RULE("PropertySignatureOrMethodSignature", () => {
-            let propName, typeAnnoOrCallSig = undefined, sb = []
+            let propName, typeAnnoOrCallSig = undefined, question = undefined
 
             propName =
                 this.SUBRULE(this.PropertyName)
             this.OPTION(() => {
-                sb.push(
-                    this.CONSUME(Question))
+                question = this.CONSUME(Question)
             })
             this.OPTION2(() => {
                 typeAnnoOrCallSig =
@@ -629,7 +629,9 @@ namespace jes.grammar {
                     ], "a TypeAnnotation or CallSignature")
             })
 
-            return PT(PropertySignatureOrMethodSignature, CHILDREN(propName, typeAnnoOrCallSig, SYNTAX_BOX(sb)))
+            return PT(PropertySignatureOrMethodSignature,
+                CHILDREN(propName, typeAnnoOrCallSig,
+                    SYNTAX_BOX(question)))
         })
 
 
@@ -1075,7 +1077,7 @@ namespace jes.grammar {
                     ], "a DeclarationElement")
                 // @formatter:on
 
-            return PT(ImportDeclaration,
+            return PT(DeclarationElement,
                 CHILDREN(exportTok, innerDecElement,
                     SYNTAX_BOX([exportTok])))
         })
