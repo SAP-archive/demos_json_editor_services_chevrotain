@@ -20,11 +20,20 @@ module.exports = function(config) {
                 {pattern: 'src/**/*.ts', included: false},
                 {pattern: 'test/**/*.ts', included: false},
                 'node_modules/chevrotain/bin/chevrotain.js',
+                'bin/gen/src/core/utils.js',
+                'bin/gen/src/core/ast.js',
+                'bin/gen/src/core/dispatcher.js',
                 'bin/gen/src/parse_tree.js',
+                'bin/gen/src/ast.js',
                 'bin/gen/src/grammar.js',
+                'bin/gen/src/dispatcher.js',
+
                 'bin/gen/test/samples/chai.js',
+
                 'bin/gen/test/parse_tree_spec.js',
-                'bin/gen/test/grammar_spec.js'
+                'bin/gen/test/grammar_spec.js',
+                'bin/gen/test/ast_spec.js',
+                'bin/gen/test/dispatcher_spec.js'
             ]),
 
         // test results reporter to use

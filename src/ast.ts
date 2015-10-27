@@ -1,9 +1,8 @@
 namespace jes.ast {
 
-    import AstNode = pudu.ast.AstNode
-    import AstNodesArray = pudu.ast.AstNodesArray
-    import NIL = pudu.ast.NIL
-
+    import AstNode = jes.core.ast.AstNode
+    import AstNodesArray = jes.core.ast.AstNodesArray
+    import NIL = jes.core.ast.NIL
 
     export class DeclarationSourceFile extends AstNode {
 
@@ -16,15 +15,11 @@ namespace jes.ast {
         }
     }
 
-
     export class DeclarationElements extends AstNodesArray<DeclarationElement> {}
-
 
     export class QualifiedName extends AstNodesArray<Identifier> {}
 
-
     export class TypeParameters extends AstNodesArray<TypeParameter> {}
-
 
     export class TypeParameter extends AstNode {
         constructor(protected _identifier:Identifier,
@@ -41,7 +36,6 @@ namespace jes.ast {
         }
     }
 
-
     export class Constraint extends AstNode {
         constructor(protected _type:Type,
                     _parent:AstNode = NIL) {
@@ -53,22 +47,26 @@ namespace jes.ast {
         }
     }
 
-
     export class Type extends AstNode {}
 
+    // TODO: implement the common behavior from AstNodesArray using a runtime js mixin.
+    export class UnionType extends Type /*mixes AstNodesArray<PrimaryType>*/ {
 
-    export class UnionType extends Type implements AstNodesArray<PrimaryType> {
+        _children:PrimaryType[]
+
         constructor(subNodes:PrimaryType[],
                     _parent:AstNode = NIL) {
             super(_parent)
             // TODO: verify is safe?  {} <- []
-            this.children = <any>_.clone(subNodes)
+            this._children = <any>_.clone(subNodes)
+        }
+
+        children():AstNode[] {
+            return this._children
         }
     }
 
-
     export class PrimaryType extends Type {}
-
 
     export class PredefinedType extends PrimaryType {
         constructor(protected _actualType:string,
@@ -80,7 +78,6 @@ namespace jes.ast {
             return this._actualType
         }
     }
-
 
     export class TypeReference extends PrimaryType {
         constructor(protected _qualifiedName:QualifiedName,
@@ -98,7 +95,6 @@ namespace jes.ast {
         }
     }
 
-
     export class ObjectType extends PrimaryType {
         constructor(protected _typeBody:TypeBody = NIL,
                     _parent:AstNode = NIL) {
@@ -110,15 +106,21 @@ namespace jes.ast {
         }
     }
 
+    // TODO: implement the common behavior from AstNodesArray using a runtime js mixin.
+    export class TupleType extends PrimaryType /*mixes AstNodesArray<PrimaryType>*/ {
 
-    export class TupleType extends PrimaryType implements AstNodesArray<Type> {
+        protected _children:PrimaryType[] = []
+
         constructor(subNodes:PrimaryType[],
                     _parent:AstNode = NIL) {
             super(_parent)
             this.children = <any>_.clone(subNodes)
         }
-    }
 
+        children():AstNode[] {
+            return this._children
+        }
+    }
 
     export class TypeQuery extends PrimaryType {
         constructor(protected _qualifiedName:QualifiedName,
@@ -131,12 +133,9 @@ namespace jes.ast {
         }
     }
 
-
     export class TypeBody extends AstNodesArray<TypeMember> {}
 
-
     export class TypeMember extends AstNode {}
-
 
     export class PropertySignature extends TypeMember {
         constructor(protected _propertyName:PropertyName,
@@ -158,7 +157,6 @@ namespace jes.ast {
             return this._TypeAnnotation
         }
     }
-
 
     export class MethodSignature extends TypeMember {
         constructor(protected _propertyName:PropertyName,
@@ -182,7 +180,6 @@ namespace jes.ast {
         }
     }
 
-
     // TODO: consider 3 separate types of propertyName classes(Identifier/StringLiteral/NumberLiteral)
     export class PropertyName extends AstNode {
         constructor(protected _name:string,
@@ -194,7 +191,6 @@ namespace jes.ast {
             return this._name
         }
     }
-
 
     export class CallSignature extends TypeMember {
         constructor(protected _typeParameters:TypeParameters = NIL,
@@ -217,12 +213,9 @@ namespace jes.ast {
         }
     }
 
-
     export class ParameterList extends AstNodesArray<Parameter> {}
 
-
     export class Parameter extends AstNode {}
-
 
     export class RequiredOrOptionalParameter extends Parameter {
         constructor(protected _identifier:Identifier,
@@ -250,7 +243,6 @@ namespace jes.ast {
         }
     }
 
-
     export class RestParameter extends Parameter {
         constructor(protected _identifier:Identifier,
                     protected _typeAnnotation:TypeAnnotation = NIL,
@@ -267,7 +259,6 @@ namespace jes.ast {
         }
     }
 
-
     export class ConstructSignature extends TypeMember {
         constructor(protected _callSignature:CallSignature = NIL,
                     _parent:AstNode = NIL) {
@@ -279,12 +270,10 @@ namespace jes.ast {
         }
     }
 
-
     export class AccessibilityModifier extends AstNode {}
     export class PublicModifier extends AccessibilityModifier {}
     export class PrivateModifier extends AccessibilityModifier {}
     export class ProtectedModifier extends AccessibilityModifier {}
-
 
     export enum IndexType {STRING, NUMBER}
     export class IndexSignature extends TypeMember {
@@ -310,15 +299,11 @@ namespace jes.ast {
 
     export class FunctionType extends Type {}
 
-
     export class ConstructorType extends Type {}
-
 
     export class TypeArguments extends AstNodesArray<Type> {}
 
-
     export class DeclarationElement extends AstNode {}
-
 
     export class TypeAliasDeclaration extends DeclarationElement {
         constructor(protected _identifier:Identifier,
@@ -336,7 +321,6 @@ namespace jes.ast {
         }
     }
 
-
     export class TypeAnnotation extends AstNode {
         constructor(protected _type:Type,
                     _parent:AstNode = NIL) {
@@ -347,7 +331,6 @@ namespace jes.ast {
             return this._type
         }
     }
-
 
     export class InterfaceDeclaration extends DeclarationElement {
 
@@ -376,7 +359,6 @@ namespace jes.ast {
         }
     }
 
-
     export class InterfaceExtendsClause extends AstNode {
         constructor(protected _classOrInterfaceTypeList:ClassOrInterfaceTypeList,
                     _parent:AstNode = NIL) {
@@ -388,9 +370,7 @@ namespace jes.ast {
         }
     }
 
-
     export class ClassOrInterfaceTypeList extends AstNodesArray<TypeReference> {}
-
 
     export class ClassHeritage extends AstNode {
 
@@ -409,7 +389,6 @@ namespace jes.ast {
         }
     }
 
-
     export class ClassExtendsClause extends AstNode {
         constructor(protected _typeReference:TypeReference,
                     _parent:AstNode = NIL) {
@@ -420,7 +399,6 @@ namespace jes.ast {
             return this._typeReference
         }
     }
-
 
     export class ImplementsClause extends AstNode {
         constructor(protected _classOrInterfaceTypeList:ClassOrInterfaceTypeList,
@@ -433,6 +411,7 @@ namespace jes.ast {
         }
     }
 
+    export class AmbientDeclaration extends DeclarationElement {}
 
     export class AmbientEnumDeclaration extends AmbientDeclaration {
         constructor(protected _identifier:Identifier,
@@ -455,9 +434,7 @@ namespace jes.ast {
         }
     }
 
-
     export class EnumBody extends AstNodesArray<EnumMember> {}
-
 
     export class EnumMember extends AstNode {
         constructor(protected _propertyName:PropertyName,
@@ -469,7 +446,6 @@ namespace jes.ast {
             return this._propertyName
         }
     }
-
 
     export class ImportDeclaration extends DeclarationElement {
         constructor(protected _identifier:Identifier,
@@ -486,7 +462,6 @@ namespace jes.ast {
             return this._qualifiedName
         }
     }
-
 
     // TODO: extends ???
     export class ExternalImportDeclaration extends AstNode {
@@ -505,7 +480,6 @@ namespace jes.ast {
         }
     }
 
-
     export class ExternalModuleReference extends AstNode {
         constructor(protected _refModuleName:string,
                     _parent:AstNode = NIL) {
@@ -517,7 +491,6 @@ namespace jes.ast {
         }
     }
 
-
     export class ExportAssignment extends DeclarationElement {
         constructor(protected _identifier:Identifier,
                     _parent:AstNode = NIL) {
@@ -528,10 +501,6 @@ namespace jes.ast {
             return this._identifier
         }
     }
-
-
-    export class AmbientDeclaration extends DeclarationElement {}
-
 
     export class AmbientVariableDeclaration extends AmbientDeclaration {
         constructor(protected _identifier:Identifier,
@@ -549,7 +518,6 @@ namespace jes.ast {
         }
     }
 
-
     export class AmbientFunctionDeclaration extends AmbientDeclaration {
         constructor(protected _identifier:Identifier,
                     protected _callSignature:CallSignature,
@@ -565,7 +533,6 @@ namespace jes.ast {
             return this._callSignature
         }
     }
-
 
     export class AmbientClassDeclaration extends AmbientDeclaration {
 
@@ -594,12 +561,9 @@ namespace jes.ast {
         }
     }
 
-
     export class AmbientClassBody extends AstNodesArray<AmbientClassBodyElement> {}
 
-
     export class AmbientClassBodyElement extends AstNode {}
-
 
     export class AmbientConstructorDeclaration extends AmbientClassBodyElement {
         constructor(protected _parameterList:ParameterList,
@@ -611,7 +575,6 @@ namespace jes.ast {
             return this._parameterList
         }
     }
-
 
     export class AmbientPropertyMemberDeclaration extends AmbientClassBodyElement {
         constructor(protected _propertyName:PropertyName,
@@ -634,7 +597,6 @@ namespace jes.ast {
         }
     }
 
-
     export class PropertyMemberDeclarationWithCallSignature extends AmbientPropertyMemberDeclaration {
         constructor(_propertyName:PropertyName,
                     _accessibilityModifier:AccessibilityModifier = NIL,
@@ -649,7 +611,6 @@ namespace jes.ast {
         }
     }
 
-
     export class PropertyMemberDeclarationWithTypeAnnotation extends AmbientPropertyMemberDeclaration {
         constructor(_propertyName:PropertyName,
                     _accessibilityModifier:AccessibilityModifier = NIL,
@@ -663,7 +624,6 @@ namespace jes.ast {
             return this._typeAnnotation
         }
     }
-
 
     // TODO: IndexSignature is also a TypeMember, duplicate?
     export class IndexSignatureInAmbientClassBody extends AmbientClassBodyElement {
@@ -687,7 +647,6 @@ namespace jes.ast {
         }
     }
 
-
     export class AmbientModuleDeclaration extends AmbientDeclaration {
         constructor(protected _qualifiedName:QualifiedName,
                     protected _ambientModuleBody:AmbientModuleBody,
@@ -704,9 +663,7 @@ namespace jes.ast {
         }
     }
 
-
     export class AmbientModuleBody extends AstNodesArray<AmbientModuleElement> {}
-
 
     export class AmbientModuleElement extends AstNode {
         constructor(protected _isExported:boolean,
@@ -718,7 +675,6 @@ namespace jes.ast {
             return this._isExported
         }
     }
-
 
     export class Identifier extends AstNode {
         constructor(protected _name:string,

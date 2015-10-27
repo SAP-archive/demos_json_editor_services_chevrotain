@@ -1,7 +1,8 @@
 /* tslint:disable:no-use-before-declare */
-namespace pudu.ast {
+namespace jes.core.ast {
 
     import Token = chevrotain.Token
+    import BaseStrategy = jes.core.ast.dispatcher.BaseBySuperTypeDispatcher;
 
 
     export abstract class AstNode {
@@ -22,25 +23,46 @@ namespace pudu.ast {
         }
 
         descendants():AstNode[] {
-            let descendantsArrs = _.map(<any>this.children, (currChild:AstNode) => currChild.descendants())
-            return <any>_.flatten(descendantsArrs)
+            let directChildren = this.children()
+            let descendantsArrs = _.map(directChildren, (currChild:AstNode) => {
+                return currChild.descendants()
+            })
+            return <any>directChildren.concat(_.flatten(descendantsArrs))
         }
 
         children():AstNode[] {
-            return <any>_.pick(this, (val) => {
-                return val instanceof AstNode &&
-                    !val === NIL &&
-                    val.parent() === this
+            let kids = <any>_.filter(<any>this, (prop) => {
+                return prop instanceof AstNode && !(prop === NIL || prop.parent() === this)
+            })
+
+            return kids
+        }
+
+        /**
+         * Visitor implementation.
+         * will invoke the provided dispatcher for each descendant in the AST
+         * @param dispatcher
+         * @returns {T[]}
+         */
+        visit<T>(dispatcher:dispatcher.IAstPatternDispatcher<void, T>):T[] {
+            let myselfAndDescendants = [this].concat(this.descendants())
+            return _.map(myselfAndDescendants, (currNode) => {
+                return dispatcher.dispatch(currNode)
             })
         }
     }
 
-
     export class AstNodesArray<T extends AstNode> extends AstNode {
+        protected _children:T[]
+
         constructor(subNodes:T[], _parent:AstNode = NIL) {
             super(_parent)
             // TODO: verify is safe?  {} <- []
-            this.children = <any>_.clone(subNodes)
+            this._children = <any>_.clone(subNodes)
+        }
+
+        children():AstNode[] {
+            return this._children
         }
     }
 
@@ -66,6 +88,7 @@ namespace pudu.ast {
             return []
         }
     }
+
 
     export const NIL:any = new Nil()
 }
