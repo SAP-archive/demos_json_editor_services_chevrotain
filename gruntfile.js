@@ -82,7 +82,8 @@ module.exports = function(grunt) {
                         'bin/tsc/test/parse_tree_spec.js',
                         'bin/tsc/test/grammar_spec.js',
                         'bin/tsc/test/ast_spec.js',
-                        'bin/tsc/test/dispatcher_spec.js'
+                        'bin/tsc/test/dispatcher_spec.js',
+                        'bin/tsc/test/builder_spec.js'
                     ]
                 }
             }

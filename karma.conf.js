@@ -23,6 +23,7 @@ module.exports = function(config) {
                 'bin/gen/src/core/utils.js',
                 'bin/gen/src/core/ast.js',
                 'bin/gen/src/core/dispatcher.js',
+                'bin/gen/src/core/builder.js',
                 'bin/gen/src/parse_tree.js',
                 'bin/gen/src/ast.js',
                 'bin/gen/src/grammar.js',
@@ -33,7 +34,8 @@ module.exports = function(config) {
                 'bin/gen/test/parse_tree_spec.js',
                 'bin/gen/test/grammar_spec.js',
                 'bin/gen/test/ast_spec.js',
-                'bin/gen/test/dispatcher_spec.js'
+                'bin/gen/test/dispatcher_spec.js',
+                'bin/gen/test/builder_spec.js'
             ]),
 
         // test results reporter to use

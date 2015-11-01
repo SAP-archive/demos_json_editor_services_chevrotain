@@ -4,6 +4,7 @@
 /// <reference path="../src/core/utils.ts" />
 /// <reference path="../src/core/ast.ts" />
 /// <reference path="../src/core/dispatcher.ts" />
+/// <reference path="../src/core/builder.ts" />
 
 /// <reference path="../src/parse_tree.ts" />
 /// <reference path="../src/ast.ts" />
