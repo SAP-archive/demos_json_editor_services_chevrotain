@@ -1,8 +1,8 @@
 /* tslint:disable:no-use-before-declare */
-namespace jes.core.ast {
+namespace pudu.ast {
 
     import Token = chevrotain.Token
-    import BaseStrategy = jes.core.ast.dispatcher.BaseBySuperTypeDispatcher;
+    import BaseStrategy = pudu.ast.dispatcher.BaseBySuperTypeDispatcher;
 
 
     export abstract class AstNode {

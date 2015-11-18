@@ -1,4 +1,4 @@
-namespace jes.parseTree.spec {
+namespace pudu.parseTree.spec {
 
     const expect = chai.expect
     import Token = chevrotain.Token

@@ -1,6 +1,6 @@
-namespace jes.core.ast.dispatcher.spec {
+namespace pudu.ast.dispatcher.spec {
 
-    import AstNode = jes.core.ast.AstNode
+    import AstNode = pudu.ast.AstNode
     import AssertionStatic = Chai.AssertionStatic
     const expect = chai.expect
 
@@ -41,7 +41,7 @@ namespace jes.core.ast.dispatcher.spec {
         }
 
         getSupportedClassNames():string[] {
-            return findClassNamesThatNeedDispatcherImpel(jes.core.ast.dispatcher.spec)
+            return findClassNamesThatNeedDispatcherImpel(pudu.ast.dispatcher.spec)
         }
 
         getBaseDispatcherInstance():IAstPatternDispatcher<IN, OUT> {

@@ -1,4 +1,4 @@
-namespace jes.parseTree {
+namespace pudu.parseTree {
 
     import Token = chevrotain.Token
 

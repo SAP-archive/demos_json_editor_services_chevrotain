@@ -1,4 +1,4 @@
-namespace jes.core.utils {
+namespace pudu.utils {
 
     export function getClassNameFromInstance(instance:any):string {
         return functionName((<any>instance).constructor);

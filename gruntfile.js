@@ -6,6 +6,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: pkg,
 
+        // TODO: SEPARATE or maybe run all together here?
         karma: {
             options: {
                 configFile: 'karma.conf.js',
@@ -17,13 +18,23 @@ module.exports = function(grunt) {
         },
 
         mocha_istanbul: {
-            coverage: {
-                src:     'bin/jes.js',
+            pudu: {
+                src:     'bin/pudu/pudu.js',
                 options: {
-                    root:           './bin/',
-                    mask:           'jesSpecs.js',
-                    coverageFolder: 'bin/coverage',
-                    excludes:       ['jesSpecs.js']
+                    root:           './bin/pudu',
+                    mask:           '*spec.js',
+                    coverageFolder: 'bin/pudu/coverage',
+                    excludes:       ['pudu_spec.js']
+                }
+            },
+
+            jes: {
+                src:     'bin/jes/jes.js',
+                options: {
+                    root:           './bin/jes',
+                    mask:           '*spec.js',
+                    coverageFolder: 'bin/jes/coverage',
+                    excludes:       ['jes_spec.js']
                 }
             }
         },
@@ -51,51 +62,57 @@ module.exports = function(grunt) {
                 outDir: "bin/gen"
             },
 
-            release: {
-                src:     ['build/jes.ts'],
-                out:     'bin/jes.js',
+            pudu: {
+                src:     ['build/pudu.ts'],
+                out:     'bin/pudu/pudu.js',
                 options: {
                     declaration:    true,
                     removeComments: false,
-                    sourceMap:      false // due to UMD and concat generated headers the original source map will be invalid.
+                    sourceMap:      false
                 }
             },
 
-            // this is the same as the 'build' process, all .ts --> .js in gen directory
-            // in a later step those files will be aggregated into separate components
-            release_test_code: {
-                src:     ["**/*.ts", "!node_modules/**/*.ts", "!build/**/*.ts", "!bin/**/*.ts"],
-                outDir:  "bin/tsc",
+            pudu_spec: {
+                src:     ['build/pudu_spec.ts'],
+                out:     "bin/pudu/pudu_spec.js",
+                options: {
+                    declaration:    false,
+                    removeComments: false,
+                    sourceMap:      false
+                }
+            },
+
+            jes: {
+                src:     ['build/jes.ts'],
+                out:     'bin/jes/jes.js',
                 options: {
                     declaration:    true,
                     removeComments: false,
-                    sourceMap:      false // due to UMD and concat generated headers the original source map will be invalid.
+                    sourceMap:      false
                 }
-            }
-        },
+            },
 
-        concat: {
-            release: {
-                files: {
-                    'bin/jesSpecs.js': [
-                        'bin/tsc/test/samples/chai.js',
-                        'bin/tsc/test/parse_tree_spec.js',
-                        'bin/tsc/test/grammar_spec.js',
-                        'bin/tsc/test/ast_spec.js',
-                        'bin/tsc/test/dispatcher_spec.js',
-                        'bin/tsc/test/builder_spec.js'
-                    ]
-                }
-            }
-        },
-
-        umd: {
-            release: {
+            jes_spec: {
+                src:     ['build/jes_spec.ts'],
+                out:     "bin/jes/jes_spec.js",
                 options: {
-                    src:            'bin/jes.js',
-                    objectToExport: 'jes',
-                    amdModuleId:    'jes',
-                    globalAlias:    'jes',
+                    declaration:    false,
+                    removeComments: false,
+                    sourceMap:      false
+                }
+            }
+        },
+
+        // TODO: the relative deps to sub modules need to be removed.
+        //       should use separate modules on NPM ?
+        umd: {
+
+            pudu: {
+                options: {
+                    src:            'bin/pudu/pudu.js',
+                    objectToExport: 'pudu',
+                    amdModuleId:    'pudu',
+                    globalAlias:    'pudu',
                     deps:           {
                         'default': ['_', 'chevrotain'],
                         amd:       ['lodash', 'chevrotain'],
@@ -105,22 +122,51 @@ module.exports = function(grunt) {
                 }
             },
 
-            release_specs: {
+            pudu_spec: {
                 options: {
-                    src:      'bin/jesSpecs.js',
-                    deps:     {
-                        'default': ['_', 'jes', 'chai', 'chevrotain'],
-                        amd:       ['lodash', 'jes', 'chai', 'chevrotain'],
-                        cjs:       ['lodash', './jes', 'chai', 'chevrotain'],
-                        global:    ['_', 'jes', 'chai', 'chevrotain']
+                    src:  'bin/pudu/pudu_spec.js',
+                    deps: {
+                        'default': ['_', 'pudu', 'chai', 'chevrotain'],
+                        amd:       ['lodash', './pudu', 'chai', 'chevrotain'],
+                        cjs:       ['lodash', './pudu', 'chai', 'chevrotain'],
+                        global:    ['_', 'pudu', 'chai', 'chevrotain']
+                    }
+                }
+            },
+
+            jes: {
+                options: {
+                    src:            'bin/jes/jes.js',
+                    objectToExport: 'jes',
+                    amdModuleId:    'jes',
+                    globalAlias:    'jes',
+                    deps:           {
+                        'default': ['_', 'chevrotain', 'pudu'],
+                        amd:       ['lodash', 'chevrotain', '../pudu/pudu'],
+                        cjs:       ['lodash', 'chevrotain', '../pudu/pudu'],
+                        global:    ['_', 'chevrotain', 'pudu']
+                    }
+                }
+            },
+
+            jes_spec: {
+                options: {
+                    src:  'bin/jes/jes_spec.js',
+                    deps: {
+                        'default': ['_', 'pudu', 'jes', 'chai', 'chevrotain'],
+                        amd:       ['lodash', '../pudu/pudu', './jes', 'chai', 'chevrotain'],
+                        cjs:       ['lodash', '../pudu/pudu', './jes', 'chai', 'chevrotain'],
+                        global:    ['_', 'pudu', 'jes', 'chai', 'chevrotain']
                     }
                 }
             }
         },
 
         clean: {
-            all: ["bin"],
-            dev: ["bin/gen"]
+            all:  ["bin"],
+            pudu: ["bin/pudu"],
+            jes:  ["bin/jes"],
+            dev:  ["bin/gen"]
         }
     })
 
@@ -133,19 +179,33 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-umd')
 
 
-    var buildTaskTargets = [
-        'clean:all',
+    grunt.registerTask('pudu_build', [
+        'clean:pudu',
         'tslint',
-        'ts:release',
-        'ts:release_test_code',
-        'concat:release',
-        'umd:release',
-        'umd:release_specs'
-    ]
+        'ts:pudu',
+        'ts:pudu_spec',
+        'umd:pudu',
+        'umd:pudu_spec'
+    ])
 
-    grunt.registerTask('build', buildTaskTargets)
-    grunt.registerTask('build_and_test', buildTaskTargets.concat(['mocha_istanbul:coverage']))
-    grunt.registerTask('test', ['mocha_istanbul:coverage'])
+    grunt.registerTask('pudu_test', [
+        'pudu_build',
+        'mocha_istanbul:pudu']
+    )
+
+    grunt.registerTask('jes_build', [
+        'clean:jes',
+        'tslint',
+        'ts:jes',
+        'ts:jes_spec',
+        'umd:jes',
+        'umd:jes_spec'
+    ])
+
+    grunt.registerTask('jes_test', [
+        'jes_build',
+        'mocha_istanbul:jes']
+    )
 
     grunt.registerTask('dev_build', [
         'clean:all',
@@ -153,6 +213,12 @@ module.exports = function(grunt) {
         'ts:dev_build',
         'karma:dev_build',
         'tslint'
+    ])
+
+    grunt.registerTask('build_test_all', [
+        'clean:all',
+        'pudu_test',
+        'jes_test'
     ])
 
 }

@@ -19,8 +19,10 @@ namespace jes.lexer {
         GROUP = Lexer.SKIPPED
     }
 
-    let allTokens = _.filter(jes.lexer, (exportedMember) => _.isFunction(exportedMember) &&
-    Token.prototype.isPrototypeOf(exportedMember.prototype))
+    let allTokens:any = _.filter(<any>jes.lexer, (exportedMember:any) => {
+        return _.isFunction(exportedMember) &&
+            Token.prototype.isPrototypeOf(exportedMember.prototype)
+    })
 
     export const JsonLexer = new Lexer(allTokens);
 }

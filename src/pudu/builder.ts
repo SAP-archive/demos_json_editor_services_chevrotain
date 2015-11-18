@@ -1,6 +1,6 @@
-namespace jes.core.ast.builder {
+namespace pudu.ast.builder {
 
-    import ParseTree = jes.parseTree.ParseTree
+    import ParseTree = pudu.parseTree.ParseTree
     import Token = chevrotain.Token
 
     export interface IMatchCase {

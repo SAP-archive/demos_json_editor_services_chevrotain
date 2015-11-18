@@ -1,4 +1,4 @@
-namespace jes.core.ast.dispatcher {
+namespace pudu.ast.dispatcher {
 
     const HANDLE = "handle"
 

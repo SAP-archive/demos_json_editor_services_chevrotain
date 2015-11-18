@@ -1,8 +1,8 @@
-namespace jes.core.ast.builder.spec {
+namespace pudu.ast.builder.spec {
 
 
     import VirtualToken = chevrotain.VirtualToken;
-    import ParseTree = jes.parseTree.ParseTree
+    import ParseTree = pudu.parseTree.ParseTree
     const expect = chai.expect
 
     class Root extends VirtualToken {}

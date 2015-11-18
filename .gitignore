@@ -4,6 +4,7 @@
 /.tscache
 /bin
 /.idea/uiDesigner.xml
+.baseDir.ts
 
 
 
