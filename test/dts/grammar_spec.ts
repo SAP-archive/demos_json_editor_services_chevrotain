@@ -1,4 +1,4 @@
-namespace jes.grammar.spec {
+namespace dts.grammar.spec {
 
     const expect = chai.expect
 
@@ -24,7 +24,7 @@ namespace jes.grammar.spec {
             let lexResult = DTSLexer.tokenize(sampleInput)
             let parser = new DTSParser(lexResult.tokens)
             let parsingResult = parser.DeclarationSourceFile()
-            expect(parsingResult).to.be.instanceOf(jes.parseTree.ParseTree)
+            expect(parsingResult).to.be.instanceOf(pudu.parseTree.ParseTree)
             expect(parsingResult.payload).to.be.instanceOf(DeclarationSourceFile)
             expect(parsingResult.children).to.have.length(1)
 

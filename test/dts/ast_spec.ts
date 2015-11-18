@@ -1,7 +1,7 @@
-namespace jes.ast {
+namespace dts.ast {
 
-    import AstNode = jes.core.ast.AstNode
-    import BaseDTSDispatcher = jes.ast.dispatcher.BaseDTSDispatcher;
+    import AstNode = pudu.ast.AstNode
+    import BaseDTSDispatcher = dts.ast.dispatcher.BaseDTSDispatcher;
     const expect = chai.expect
 
     describe("The DTS Ast", () => {

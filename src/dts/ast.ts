@@ -1,8 +1,8 @@
-namespace jes.ast {
+namespace dts.ast {
 
-    import AstNode = jes.core.ast.AstNode
-    import AstNodesArray = jes.core.ast.AstNodesArray
-    import NIL = jes.core.ast.NIL
+    import AstNode = pudu.ast.AstNode
+    import AstNodesArray = pudu.ast.AstNodesArray
+    import NIL = pudu.ast.NIL
 
     export class DeclarationSourceFile extends AstNode {
 

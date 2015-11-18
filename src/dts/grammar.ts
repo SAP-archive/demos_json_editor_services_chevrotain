@@ -1,10 +1,10 @@
-namespace jes.grammar {
+namespace dts.grammar {
 
     import Token = chevrotain.Token
     import VirtualToken = chevrotain.VirtualToken
     import Lexer = chevrotain.Lexer
-    import PT = jes.parseTree.PT
-    import ParseTree = jes.parseTree.ParseTree;
+    import PT = pudu.parseTree.PT
+    import ParseTree = pudu.parseTree.ParseTree;
 
     // ----------------- Lexer -----------------
 

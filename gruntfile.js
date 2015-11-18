@@ -8,10 +8,22 @@ module.exports = function(grunt) {
 
         // TODO: SEPARATE or maybe run all together here?
         karma: {
+
             options: {
-                configFile: 'karma.conf.js',
                 singleRun:  true,
                 browsers:   ['Chrome']
+            },
+
+            pudu: {
+                options: {
+                    configFile: 'karma.pudu.conf.js'
+                }
+            },
+
+            jes: {
+                options: {
+                    configFile: 'karma.jes.conf.js'
+                }
             },
 
             dev_build: {}
@@ -164,9 +176,9 @@ module.exports = function(grunt) {
 
         clean: {
             all:  ["bin"],
+            dev:  ["bin/gen"],
             pudu: ["bin/pudu"],
-            jes:  ["bin/jes"],
-            dev:  ["bin/gen"]
+            jes:  ["bin/jes"]
         }
     })
 
@@ -208,11 +220,11 @@ module.exports = function(grunt) {
     )
 
     grunt.registerTask('dev_build', [
-        'clean:all',
+        'clean:dev',
         'tslint',
         'ts:dev_build',
-        'karma:dev_build',
-        'tslint'
+        'karma:pudu',
+        'karma:jes'
     ])
 
     grunt.registerTask('build_test_all', [

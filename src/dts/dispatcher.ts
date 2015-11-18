@@ -1,11 +1,11 @@
-namespace jes.ast.dispatcher {
+namespace dts.ast.dispatcher {
 
-    import BaseBySuperTypeDispatcher = jes.core.ast.dispatcher.BaseBySuperTypeDispatcher
-    import findHandleMethodsOnDispatcher = jes.core.ast.dispatcher.findHandleMethodsOnDispatcher
-    import validateBaseDispatcher = jes.core.ast.dispatcher.validateBaseDispatcher
-    import findClassNamesThatNeedDispatcherImpel = jes.core.ast.dispatcher.findClassNamesThatNeedDispatcherImpel
-    import IAstPatternDispatcher = jes.core.ast.dispatcher.IAstPatternDispatcher
-    import AstNode = jes.core.ast.AstNode
+    import BaseBySuperTypeDispatcher = pudu.ast.dispatcher.BaseBySuperTypeDispatcher
+    import findHandleMethodsOnDispatcher = pudu.ast.dispatcher.findHandleMethodsOnDispatcher
+    import validateBaseDispatcher = pudu.ast.dispatcher.validateBaseDispatcher
+    import findClassNamesThatNeedDispatcherImpel = pudu.ast.dispatcher.findClassNamesThatNeedDispatcherImpel
+    import IAstPatternDispatcher = pudu.ast.dispatcher.IAstPatternDispatcher
+    import AstNode = pudu.ast.AstNode
 
     export class BaseDTSDispatcher<IN, OUT> extends BaseBySuperTypeDispatcher<IN, OUT> {
 
@@ -24,7 +24,7 @@ namespace jes.ast.dispatcher {
         }
 
         getSupportedClassNames():string[] {
-            return findClassNamesThatNeedDispatcherImpel(jes.ast)
+            return findClassNamesThatNeedDispatcherImpel(dts.ast)
         }
 
         getBaseDispatcherInstance():IAstPatternDispatcher<IN, OUT> {

@@ -16,26 +16,19 @@ module.exports = function(config) {
         // list of files / patterns to load in the browser
         files: ['libs/lodash.js'].concat(
             [
-                {pattern: 'bin/gen/**/*.map', included: false},
+                'node_modules/chevrotain/bin/chevrotain.js',
+
+                {pattern: 'bin/gen/src/pudu/**/*.map', included: false},
+                {pattern: 'bin/gen/src/jes/**/*.map', included: false},
+                {pattern: 'bin/gen/test/jes/**/*.map', included: false},
+
                 {pattern: 'src/**/*.ts', included: false},
                 {pattern: 'test/**/*.ts', included: false},
-                'node_modules/chevrotain/bin/chevrotain.js',
-                'bin/gen/src/core/utils.js',
-                'bin/gen/src/core/ast.js',
-                'bin/gen/src/core/dispatcher.js',
-                'bin/gen/src/core/builder.js',
-                'bin/gen/src/parse_tree.js',
-                'bin/gen/src/ast.js',
-                'bin/gen/src/grammar.js',
-                'bin/gen/src/dispatcher.js',
 
-                'bin/gen/test/samples/chai.js',
+                {pattern: 'bin/gen/src/pudu/**/*.js'},
 
-                'bin/gen/test/parse_tree_spec.js',
-                'bin/gen/test/grammar_spec.js',
-                'bin/gen/test/ast_spec.js',
-                'bin/gen/test/dispatcher_spec.js',
-                'bin/gen/test/builder_spec.js'
+                {pattern: 'bin/gen/src/jes/**/*.js'},
+                {pattern: 'bin/gen/test/jes/**/*.js'}
             ]),
 
         // test results reporter to use
