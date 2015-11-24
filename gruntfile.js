@@ -6,7 +6,6 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: pkg,
 
-        // TODO: SEPARATE or maybe run all together here?
         karma: {
 
             options: {

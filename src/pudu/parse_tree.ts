@@ -1,6 +1,7 @@
 namespace pudu.parseTree {
 
     import Token = chevrotain.Token
+    import VirtualToken = chevrotain.VirtualToken
 
     export class ParseTree {
         getImage():string { return this.payload.image }
@@ -38,6 +39,25 @@ namespace pudu.parseTree {
         }
     }
 
+    export abstract class ParseTreeToken extends VirtualToken {}
+    export abstract class SyntaxBox extends ParseTreeToken {}
+
+    function SYNTAX_BOX(tokens:Token[]):ParseTree | any {
+        let tokensCompcat = _.compact(tokens)
+        let tokensTrees = _.map(tokensCompcat, (currToken) => PT(currToken))
+        return _.isEmpty(tokensTrees) ? undefined : PT(SyntaxBox, tokensTrees)
+    }
+
+    function CHILDREN(...children:any[]):ParseTree[] {
+        let flatChildren = _.flatten(children)
+        let existingFlatChildren = _.compact(flatChildren)
+
+        return _.map(existingFlatChildren, (currChild:any) => {
+            return currChild instanceof ParseTree ?
+                currChild :
+                PT(currChild)
+        })
+    }
 
 
 
