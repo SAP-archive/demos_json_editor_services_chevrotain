@@ -2,10 +2,6 @@
   "name": "json_editor_services",
   "version": "0.1.0",
   "license": " Apache-2.0",
-  "scripts": {
-    "test": "grunt test",
-    "build_and_test": "grunt build_and_test"
-  },
   "dependencies": {
     "lodash": "~3.10.1",
     "chevrotain": "~0.5.6"
