@@ -4,7 +4,7 @@ namespace dts.grammar {
     import VirtualToken = chevrotain.VirtualToken
     import Lexer = chevrotain.Lexer
     import PT = pudu.parseTree.PT
-    import ParseTree = pudu.parseTree.ParseTree;
+    import ParseTree = pudu.parseTree.ParseTree
 
     // ----------------- Lexer -----------------
 
@@ -118,7 +118,7 @@ namespace dts.grammar {
     }
 
     function CHILDREN(...children:any[]):ParseTree[] {
-        let flatChildren = _.flatten(children)
+        let flatChildren = _.flatten(<any>children, false)
         let existingFlatChildren = _.compact(flatChildren)
 
         return _.map(existingFlatChildren, (currChild:any) => {

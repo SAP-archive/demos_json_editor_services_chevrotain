@@ -42,14 +42,14 @@ namespace pudu.parseTree {
     export abstract class ParseTreeToken extends VirtualToken {}
     export abstract class SyntaxBox extends ParseTreeToken {}
 
-    function SYNTAX_BOX(tokens:Token[]):ParseTree | any {
+    export function SYNTAX_BOX(tokens:Token[]):ParseTree | any {
         let tokensCompcat = _.compact(tokens)
         let tokensTrees = _.map(tokensCompcat, (currToken) => PT(currToken))
         return _.isEmpty(tokensTrees) ? undefined : PT(SyntaxBox, tokensTrees)
     }
 
-    function CHILDREN(...children:any[]):ParseTree[] {
-        let flatChildren = _.flatten(children)
+    export function CHILDREN(...children:any[]):ParseTree[] {
+        let flatChildren = _.flatten(<any>children, false)
         let existingFlatChildren = _.compact(flatChildren)
 
         return _.map(existingFlatChildren, (currChild:any) => {
