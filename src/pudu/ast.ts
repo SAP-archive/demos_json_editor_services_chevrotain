@@ -57,6 +57,7 @@ namespace pudu.ast {
 
         constructor(subNodes:T[], _parent:AstNode = NIL) {
             super(_parent)
+            // TODO: is clone needed? ? it is not even deep clone
             // TODO: verify is safe?  {} <- []
             this._children = <any>_.clone(subNodes)
         }
