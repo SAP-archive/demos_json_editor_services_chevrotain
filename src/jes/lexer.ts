@@ -16,7 +16,7 @@ namespace jes.lexer {
     export class NumberLiteral extends Token { static PATTERN = /-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/}
     export class WhiteSpace extends Token {
         static PATTERN = /\s+/
-        GROUP = Lexer.SKIPPED
+        static GROUP = Lexer.SKIPPED
     }
 
     export const allTokens:any = _.filter(<any>jes.lexer, (exportedMember:any) => {
