@@ -5,3 +5,4 @@
 /// <reference path="../src/jes/lexer.ts" />
 /// <reference path="../src/jes/parser.ts" />
 /// <reference path="../src/jes/ast.ts" />
+/// <reference path="../src/jes/dispatcher.ts" />

@@ -1,4 +1,4 @@
-namespace dts.ast {
+namespace jes.ast {
 
     import AstNode = pudu.ast.AstNode
     import AstNodesArray = pudu.ast.AstNodesArray
