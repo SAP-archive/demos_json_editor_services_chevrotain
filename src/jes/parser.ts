@@ -36,15 +36,11 @@ namespace jes.parser {
 
         public object = this.RULE("object", () => {
             let lCurlyTok, rCurlyTok
-            let objectItemPTs = [], commas = []
+            let objectItemPTs = [], commas
 
             lCurlyTok = this.CONSUME(LCurly)
-            this.OPTION(() => {
-                objectItemPTs.push(this.SUBRULE(this.objectItem))
-                this.MANY(() => {
-                    commas.push(this.CONSUME(Comma))
-                    objectItemPTs.push(this.SUBRULE2(this.objectItem))
-                })
+            commas = this.MANY_SEP(Comma, () => {
+                objectItemPTs.push(this.SUBRULE2(this.objectItem))
             })
             rCurlyTok = this.CONSUME(RCurly)
 
@@ -65,15 +61,11 @@ namespace jes.parser {
 
         public array = this.RULE("array", () => {
             let lSquareTok, rSquareTok
-            let valuePTs = [], commas = []
+            let valuePTs = [], commas
 
             lSquareTok = this.CONSUME(LSquare)
-            this.OPTION(() => {
+            commas = this.MANY_SEP(Comma, () => {
                 valuePTs.push(this.SUBRULE(this.value))
-                this.MANY(() => {
-                    commas.push(this.CONSUME(Comma))
-                    valuePTs.push(this.SUBRULE2(this.value))
-                })
             })
             rSquareTok = this.CONSUME(RSquare)
 
