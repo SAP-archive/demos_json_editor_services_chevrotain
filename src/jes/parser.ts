@@ -12,9 +12,9 @@ namespace jes.parser {
     import LSquare = jes.lexer.LSquare
     import RSquare = jes.lexer.RSquare
     import NumberLiteral = jes.lexer.NumberLiteral
-    import True = jes.lexer.True
-    import False = jes.lexer.False
-    import Null = jes.lexer.Null
+    import TrueLiteral = jes.lexer.TrueLiteral
+    import FalseLiteral = jes.lexer.FalseLiteral
+    import NullLiteral = jes.lexer.NullLiteral
 
     import ParseTreeToken = pudu.parseTree.ParseTreeToken
     import PT = pudu.parseTree.PT
@@ -25,6 +25,7 @@ namespace jes.parser {
     export class ObjectPT extends ParseTreeToken {}
     export class ObjectItemPT extends ParseTreeToken {}
     export class ArrayPT extends ParseTreeToken {}
+    export class ValuePT extends ParseTreeToken {}
 
 
     export class JsonParser extends Parser {
@@ -74,15 +75,17 @@ namespace jes.parser {
         })
 
         public value = this.RULE("value", () => {
-            return this.OR([
+            let valueChildPT = this.OR([
                 {ALT: () => PT(this.CONSUME(StringLiteral))},
                 {ALT: () => PT(this.CONSUME(NumberLiteral))},
                 {ALT: () => this.SUBRULE(this.object)},
                 {ALT: () => this.SUBRULE(this.array)},
-                {ALT: () => PT(this.CONSUME(True))},
-                {ALT: () => PT(this.CONSUME(False))},
-                {ALT: () => PT(this.CONSUME(Null))}
+                {ALT: () => PT(this.CONSUME(TrueLiteral))},
+                {ALT: () => PT(this.CONSUME(FalseLiteral))},
+                {ALT: () => PT(this.CONSUME(NullLiteral))}
             ], "a value")
+
+            return PT(ValuePT, [valueChildPT])
         })
     }
 }

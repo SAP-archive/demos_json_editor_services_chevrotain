@@ -3,6 +3,7 @@ namespace jes.ast {
     import AstNode = pudu.ast.AstNode
     import AstNodesArray = pudu.ast.AstNodesArray
     import NIL = pudu.ast.NIL
+    import Token = chevrotain.Token
 
     export type ValueNode = StringNode | NumberNode | TrueNode | FalseNode |
         NullNode | ArrayNode | ObjectNode | pudu.ast.Nil
@@ -18,8 +19,9 @@ namespace jes.ast {
 
         constructor(private _key:StringNode,
                     private _value:ValueNode = NIL,
-                    _parent:AstNode = NIL) {
-            super(_parent)
+                    _parent:AstNode = NIL,
+                    _syntaxBox:Token[] = []) {
+            super(_parent, _syntaxBox)
         }
 
         get key():StringNode {
@@ -40,8 +42,9 @@ namespace jes.ast {
 
     export class StringNode extends AstNode {
         constructor(private _value:string,
-                    _parent:AstNode = NIL) {
-            super(_parent)
+                    _parent:AstNode = NIL,
+                    _syntaxBox:Token[] = []) {
+            super(_parent, _syntaxBox)
         }
 
         get value():string {
@@ -50,12 +53,15 @@ namespace jes.ast {
     }
 
     export class NumberNode extends AstNode {
-        constructor(private _value:number,
-                    _parent:AstNode = NIL) {
-            super(_parent)
+        constructor(private _value:string,
+                    _parent:AstNode = NIL,
+                    _syntaxBox:Token[] = []) {
+            super(_parent, _syntaxBox)
         }
 
-        get value():number {
+        // using a 'string' type to avoid possible precision issues in converting JSON numbers to javascript numbers
+        // uncertain there is really a problem...
+        get value():string {
             return this._value;
         }
     }

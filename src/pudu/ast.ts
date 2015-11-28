@@ -7,7 +7,8 @@ namespace pudu.ast {
 
     export abstract class AstNode {
 
-        constructor(protected _parent:AstNode = NIL) {}
+        constructor(protected _parent:AstNode = NIL,
+                    protected _syntaxBox:Token[] = []) {}
 
         parent():AstNode {
             return this._parent
@@ -50,15 +51,23 @@ namespace pudu.ast {
                 return dispatcher.dispatch(currNode)
             })
         }
+
+        get syntaxBox():Token[] {
+            // TODO: this is mutable, perhaps freeze it in the constructor?
+            return this._syntaxBox;
+        }
     }
 
     export class AstNodesArray<T extends AstNode> extends AstNode {
         protected _children:T[]
 
-        constructor(subNodes:T[], _parent:AstNode = NIL) {
-            super(_parent)
+        constructor(subNodes:T[],
+                    _parent:AstNode = NIL,
+                    _syntaxBox:Token[] = []) {
+            super(_parent, _syntaxBox)
             // TODO: is clone needed? ? it is not even deep clone
-            // TODO: verify is safe?  {} <- []
+            // TODO: verify is safe?  {} <- .
+            // TODO: maybe just freeze it?
             this._children = <any>_.clone(subNodes)
         }
 

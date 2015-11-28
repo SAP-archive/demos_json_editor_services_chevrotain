@@ -18,7 +18,7 @@ namespace pudu.ast.builder {
                 let childClassName = utils.getClassNameFromInstance(currChild)
                 throw Error(`non exhaustive match, no case for <${childClassName}>`)
             }
-            matchingCase.THEN()
+            matchingCase.THEN.call(null, currChild)
         })
     }
 
@@ -26,5 +26,9 @@ namespace pudu.ast.builder {
         _.forEach(node.children(), (currChild) => {
             (<any>currChild)._parent = node
         })
+    }
+
+    export function buildSyntaxBox(tree:ParseTree):Token[] {
+        return _.map(tree.children, (subtree) => subtree.payload)
     }
 }

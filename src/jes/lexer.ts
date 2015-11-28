@@ -3,9 +3,9 @@ namespace jes.lexer {
     import Token = chevrotain.Token
     import Lexer = chevrotain.Lexer
 
-    export class True extends Token { static PATTERN = /true/}
-    export class False extends Token { static PATTERN = /false/}
-    export class Null extends Token { static PATTERN = /null/}
+    export class TrueLiteral extends Token { static PATTERN = /true/}
+    export class FalseLiteral extends Token { static PATTERN = /false/}
+    export class NullLiteral extends Token { static PATTERN = /null/}
     export class LCurly extends Token { static PATTERN = /{/}
     export class RCurly extends Token { static PATTERN = /}/}
     export class LSquare extends Token { static PATTERN = /\[/}

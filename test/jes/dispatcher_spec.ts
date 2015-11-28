@@ -22,14 +22,14 @@ namespace jes.dispatcher.spec {
                 }
 
                 handleNumberNode(node:NumberNode):string {
-                    return "" + node.value
+                    return node.value
                 }
             }
 
             let dispatcher = new dispatcherConstructor()
 
-            let sixes = new NumberNode(666)
-            let threes = new NumberNode(333)
+            let sixes = new NumberNode("666")
+            let threes = new NumberNode("333")
             let arr = new ArrayNode([sixes, threes])
 
             let expectedResult = ["length: 2", "666", "333"]

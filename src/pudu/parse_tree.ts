@@ -40,12 +40,12 @@ namespace pudu.parseTree {
     }
 
     export abstract class ParseTreeToken extends VirtualToken {}
-    export abstract class SyntaxBox extends ParseTreeToken {}
+    export abstract class SyntaxBoxPT extends ParseTreeToken {}
 
     export function SYNTAX_BOX(tokens:Token[]):ParseTree | any {
         let tokensCompcat = _.compact(tokens)
         let tokensTrees = _.map(tokensCompcat, (currToken) => PT(currToken))
-        return _.isEmpty(tokensTrees) ? undefined : PT(SyntaxBox, tokensTrees)
+        return _.isEmpty(tokensTrees) ? undefined : PT(SyntaxBoxPT, tokensTrees)
     }
 
     export function CHILDREN(...children:any[]):ParseTree[] {
