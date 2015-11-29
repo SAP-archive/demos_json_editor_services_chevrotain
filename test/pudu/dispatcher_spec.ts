@@ -41,7 +41,9 @@ namespace pudu.ast.dispatcher.spec {
         }
 
         getSupportedClassNames():string[] {
-            return findClassNamesThatNeedDispatcherImpel(pudu.ast.dispatcher.spec)
+            return findClassNamesThatNeedDispatcherImpel(pudu.ast.dispatcher.spec).concat(
+                super.getSupportedClassNames()
+            )
         }
 
         getBaseDispatcherInstance():IAstPatternDispatcher<IN, OUT> {
@@ -77,7 +79,7 @@ namespace pudu.ast.dispatcher.spec {
         }
     }
 
-    describe("The dispatcher for jes's core asts capabilities", () => {
+    describe("The dispatcher for pudu capabilities", () => {
 
         it("can dispatch according to a type", () => {
             let d_dispathcer = class extends BaseDummyDispatcher<void, string> {

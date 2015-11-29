@@ -63,6 +63,10 @@ namespace pudu.ast.dispatcher {
             return undefined
         }
 
+        handleAstNodesArray<T extends AstNode>(node:AstNodesArray<T>, param?:IN, currClass?):OUT {
+            return this.dispatchAsSuperClass(node, param, currClass)
+        }
+
         /**
          * Will return an instance of a BaseDispatcher for a specific Ast node's hierarchy
          * 'against' which validations will be performed.
@@ -109,7 +113,10 @@ namespace pudu.ast.dispatcher {
          *
          * @returns a list of constructor names for classes that are supported by this dispatcher
          */
-        protected abstract getSupportedClassNames():string[];
+        protected getSupportedClassNames():string[] {
+            // TODO: avoid hardcoded values
+            return [utils.functionName(AstNode), utils.functionName(AstNodesArray)]
+        }
     }
 
     /**

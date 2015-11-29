@@ -24,7 +24,7 @@ namespace jes.ast.dispatcher {
         }
 
         getSupportedClassNames():string[] {
-            return findClassNamesThatNeedDispatcherImpel(jes.ast)
+            return findClassNamesThatNeedDispatcherImpel(jes.ast).concat(super.getSupportedClassNames())
         }
 
         getBaseDispatcherInstance():IAstPatternDispatcher<IN, OUT> {
@@ -68,7 +68,7 @@ namespace jes.ast.dispatcher {
      * convenience class to be used in situations where the same action needs to be invoked on all the nodes
      * alternatively just use a map/forEach... :)
      */
-    export abstract class SameActionDispatcher<IN, OUT> extends BaseJsonDispatcher<IN, OUT> {
+    export class SameActionDispatcher<IN, OUT> extends BaseJsonDispatcher<IN, OUT> {
 
         constructor(private action:(node:AstNode) => OUT) {super()}
 

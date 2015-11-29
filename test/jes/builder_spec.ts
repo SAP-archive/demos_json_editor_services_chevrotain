@@ -7,6 +7,7 @@ namespace jes.ast.builder.spec {
     import lexer = jes.lexer
     import parser = jes.parser
 
+    // TODO: add syntaxBox checks
     describe("The jes ast builder", () => {
 
         it("can build a StringNode Ast", () => {
