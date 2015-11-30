@@ -7,7 +7,29 @@
       <excludeFolder url="file://$MODULE_DIR$/bin" />
       <excludeFolder url="file://$MODULE_DIR$/coverage" />
       <excludeFolder url="file://$MODULE_DIR$/gen" />
-      <excludeFolder url="file://$MODULE_DIR$/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/.bin" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/chai" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-cli" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-contrib-clean" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-contrib-concat" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-jasmine-node-coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-karma" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-mocha-istanbul" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-ts" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-tslint" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/grunt-umd" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/istanbul" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/karma" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/karma-chai" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/karma-chrome-launcher" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/karma-firefox-launcher" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/karma-ie-launcher" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/karma-mocha" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/lodash" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/mocha" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/tslint" />
+      <excludeFolder url="file://$MODULE_DIR$/node_modules/typescript" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
