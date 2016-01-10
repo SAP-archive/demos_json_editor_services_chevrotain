@@ -46,7 +46,7 @@ namespace pudu.ast {
          * @returns {T[]}
          */
         visit<T>(dispatcher:dispatcher.IAstPatternDispatcher<void, T>):T[] {
-            let myselfAndDescendants = [this].concat(this.descendants())
+            let myselfAndDescendants = [<any>this].concat(this.descendants())
             return _.map(myselfAndDescendants, (currNode) => {
                 return dispatcher.dispatch(currNode)
             })

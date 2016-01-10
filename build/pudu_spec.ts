@@ -1,5 +1,5 @@
 /// <reference path="../libs/lodash.d.ts" />
-/// <reference path="../libs/chevrotain.d.ts" />
+/// <reference path="../node_modules/chevrotain/bin/chevrotain.d.ts" />
 /// <reference path="../libs/chai.d.ts" />
 /// <reference path="../libs/mocha.d.ts" />
 
