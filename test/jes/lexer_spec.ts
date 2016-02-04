@@ -1,17 +1,12 @@
-namespace jes.lexer.spec {
+import {JsonLexer} from "../../src/jes/lexer"
 
-    const expect = chai.expect
+describe("The Json lexer", () => {
 
-    describe("The Json lexer", () => {
+    it("can lex a simple Json - sanity test", () => {
+        let inputText = "{ \"arr\": [1,2,3], \"obj\": {\"num\":666}}"
+        let lexResult = JsonLexer.tokenize(inputText)
 
-        it("can lex a simple Json - sanity test", () => {
+        expect(lexResult.errors).to.be.empty
+    })
 
-            let inputText = "{ \"arr\": [1,2,3], \"obj\": {\"num\":666}}";
-            let lexResult = JsonLexer.tokenize(inputText);
-
-            expect(lexResult.errors).to.be.empty
-        })
-
-    });
-}
-
+})

@@ -1,105 +1,93 @@
-namespace jes.ast.builder {
+import {ParseTree, SyntaxBoxPT} from "../pudu/parse_tree"
+import {
+    ObjectNode, ObjectItemNode, ValueNode, ArrayNode, StringNode, NumberNode, TrueNode, FalseNode,
+    NullNode
+} from "./ast"
+import {ObjectItemPT, ObjectPT, ArrayPT, ValuePT} from "./parser"
+import {buildSyntaxBox, MATCH_CHILDREN, setParent} from "../pudu/builder"
+import {NIL} from "../pudu/ast"
+import {StringLiteral, NumberLiteral, NullLiteral, TrueLiteral, FalseLiteral} from "./lexer"
 
-    import ParseTree = pudu.parseTree.ParseTree
-    import AstNode = pudu.ast.AstNode
-    import NIL = pudu.ast.NIL
-    import MATCH_CHILDREN = pudu.ast.builder.MATCH_CHILDREN
-    import setParent = pudu.ast.builder.setParent
-    import buildSyntaxBox = pudu.ast.builder.buildSyntaxBox
+export function buildObjectNode(tree:ParseTree):ObjectNode {
+    let objectItemNodes = []
+    let syntaxBox = []
 
-    import ObjectPT = jes.parser.ObjectPT
-    import ValuePT = jes.parser.ValuePT
-    import StringLiteral = jes.lexer.StringLiteral
-    import NumberLiteral = jes.lexer.NumberLiteral
-    import NullLiteral = jes.lexer.NullLiteral
-    import TrueLiteral = jes.lexer.TrueLiteral
-    import FalseLiteral = jes.lexer.FalseLiteral
-    import ArrayPT = jes.parser.ArrayPT
-    import SyntaxBoxPT = pudu.parseTree.SyntaxBoxPT
-    import ObjectItemPT = jes.parser.ObjectItemPT
+    MATCH_CHILDREN(tree,
+        {CASE: ObjectItemPT, THEN: (childTree) => objectItemNodes.push(buildObjectItemNode(childTree))},
+        {CASE: SyntaxBoxPT, THEN: (childTree) => syntaxBox = buildSyntaxBox(childTree)}
+    )
 
-    export function buildObjectNode(tree:ParseTree):ObjectNode {
-        let objectItemNodes = []
-        let syntaxBox = []
+    let objectNodeInstance = new ObjectNode(objectItemNodes, NIL, syntaxBox)
+    setParent(objectNodeInstance)
+    return objectNodeInstance
+}
 
-        MATCH_CHILDREN(tree,
-            {CASE: ObjectItemPT, THEN: (childTree) => objectItemNodes.push(buildObjectItemNode(childTree))},
-            {CASE: SyntaxBoxPT, THEN: (childTree) => syntaxBox = buildSyntaxBox(childTree)}
-        )
+export function buildObjectItemNode(tree:ParseTree):ObjectItemNode {
+    let key = undefined, value = undefined
+    let syntaxBox = []
 
-        let objectNodeInstance = new ObjectNode(objectItemNodes, NIL, syntaxBox)
-        setParent(objectNodeInstance)
-        return objectNodeInstance
-    }
+    // TODO: how to express mandatory properties? (or all must have matched?)
+    MATCH_CHILDREN(tree,
+        {CASE: StringLiteral, THEN: (childTree) => key = buildStringNode(childTree)},
+        {CASE: ValuePT, THEN: (childTree) => value = buildValueNode(childTree)},
+        {CASE: SyntaxBoxPT, THEN: (childTree) => syntaxBox = buildSyntaxBox(childTree)}
+    )
 
-    export function buildObjectItemNode(tree:ParseTree):ObjectItemNode {
-        let key = undefined, value = undefined
-        let syntaxBox = []
+    let objectItemNodeInstance = new ObjectItemNode(key, value, NIL, syntaxBox)
+    setParent(objectItemNodeInstance)
+    return objectItemNodeInstance
+}
 
-        // TODO: how to express mandatory properties? (or all must have matched?)
-        MATCH_CHILDREN(tree,
-            {CASE: StringLiteral, THEN: (childTree) => key = buildStringNode(childTree)},
-            {CASE: ValuePT, THEN: (childTree) => value = buildValueNode(childTree)},
-            {CASE: SyntaxBoxPT, THEN: (childTree) => syntaxBox = buildSyntaxBox(childTree)}
-        )
+export function buildValueNode(tree:ParseTree):ValueNode {
+    let valueInstance = undefined
 
-        let objectItemNodeInstance = new ObjectItemNode(key, value, NIL, syntaxBox)
-        setParent(objectItemNodeInstance)
-        return objectItemNodeInstance
-    }
+    // TODO: how to express at least one must have matched?
+    MATCH_CHILDREN(tree,
+        {CASE: StringLiteral, THEN: (childTree) => valueInstance = buildStringNode(childTree)},
+        {CASE: NumberLiteral, THEN: (childTree) => valueInstance = buildNumberNode(childTree)},
+        {CASE: NullLiteral, THEN: (childTree) => valueInstance = buildNullNode(childTree)},
+        {CASE: TrueLiteral, THEN: (childTree) => valueInstance = buildTrueNode(childTree)},
+        {CASE: FalseLiteral, THEN: (childTree) => valueInstance = buildFalseNode(childTree)},
+        {CASE: ObjectPT, THEN: (childTree) => valueInstance = buildObjectNode(childTree)},
+        {CASE: ArrayPT, THEN: (childTree) => valueInstance = buildArrayNode(childTree)}
+    )
 
-    export function buildValueNode(tree:ParseTree):ValueNode {
-        let valueInstance = undefined
+    // no need for setParent here, it is set in one of the specific builders
+    return valueInstance
+}
 
-        // TODO: how to express at least one must have matched?
-        MATCH_CHILDREN(tree,
-            {CASE: StringLiteral, THEN: (childTree) => valueInstance = buildStringNode(childTree)},
-            {CASE: NumberLiteral, THEN: (childTree) => valueInstance = buildNumberNode(childTree)},
-            {CASE: NullLiteral, THEN: (childTree) => valueInstance = buildNullNode(childTree)},
-            {CASE: TrueLiteral, THEN: (childTree) => valueInstance = buildTrueNode(childTree)},
-            {CASE: FalseLiteral, THEN: (childTree) => valueInstance = buildFalseNode(childTree)},
-            {CASE: ObjectPT, THEN: (childTree) => valueInstance = buildObjectNode(childTree)},
-            {CASE: ArrayPT, THEN: (childTree) => valueInstance = buildArrayNode(childTree)}
-        )
+export function buildArrayNode(tree:ParseTree):ArrayNode {
+    let arrItems = []
+    let syntaxBox = []
 
-        // no need for setParent here, it is set in one of the specific builders
-        return valueInstance
-    }
+    MATCH_CHILDREN(tree,
+        {CASE: ValuePT, THEN: (childTree) => arrItems.push(buildValueNode(childTree))},
+        {CASE: SyntaxBoxPT, THEN: (childTree) => syntaxBox = buildSyntaxBox(childTree)}
+    )
 
-    export function buildArrayNode(tree:ParseTree):ArrayNode {
-        let arrItems = []
-        let syntaxBox = []
+    let arrayNodeInstance = new ArrayNode(arrItems, NIL, syntaxBox)
+    setParent(arrayNodeInstance)
+    return arrayNodeInstance
+}
 
-        MATCH_CHILDREN(tree,
-            {CASE: ValuePT, THEN: (childTree) => arrItems.push(buildValueNode(childTree))},
-            {CASE: SyntaxBoxPT, THEN: (childTree) => syntaxBox = buildSyntaxBox(childTree)}
-        )
+export function buildStringNode(tree:ParseTree):StringNode {
+    let orgStringVal = tree.payload.image
+    let stringValWithoutQuotes = orgStringVal.substring(1, orgStringVal.length - 1)
+    return new StringNode(stringValWithoutQuotes, NIL, [tree.payload])
+}
 
-        let arrayNodeInstance = new ArrayNode(arrItems, NIL, syntaxBox)
-        setParent(arrayNodeInstance)
-        return arrayNodeInstance
-    }
+export function buildNumberNode(tree:ParseTree):NumberNode {
+    return new NumberNode(tree.payload.image, NIL, [tree.payload])
+}
 
-    export function buildStringNode(tree:ParseTree):StringNode {
-        let orgStringVal = tree.payload.image
-        let stringValWithoutQuotes = orgStringVal.substring(1, orgStringVal.length - 1);
-        return new StringNode(stringValWithoutQuotes, NIL, [tree.payload])
-    }
+export function buildTrueNode(tree:ParseTree):TrueNode {
+    return new TrueNode(NIL, [tree.payload])
+}
 
-    export function buildNumberNode(tree:ParseTree):NumberNode {
-        return new NumberNode(tree.payload.image, NIL, [tree.payload])
-    }
+export function buildFalseNode(tree:ParseTree):FalseNode {
+    return new FalseNode(NIL, [tree.payload])
+}
 
-    export function buildTrueNode(tree:ParseTree):TrueNode {
-        return new TrueNode(NIL, [tree.payload])
-    }
-
-    export function buildFalseNode(tree:ParseTree):FalseNode {
-        return new FalseNode(NIL, [tree.payload])
-    }
-
-    export function buildNullNode(tree:ParseTree):NullNode {
-        return new NullNode(NIL, [tree.payload])
-    }
-
+export function buildNullNode(tree:ParseTree):NullNode {
+    return new NullNode(NIL, [tree.payload])
 }
