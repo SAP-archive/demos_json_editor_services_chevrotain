@@ -1,5 +1,5 @@
 import {ParseTree} from "./parse_tree"
-import {AstNode, AstNodesArray} from "./ast"
+import {AstNode} from "./ast"
 import * as utils from "./utils"
 import {Token} from "chevrotain"
 import * as _ from "lodash"

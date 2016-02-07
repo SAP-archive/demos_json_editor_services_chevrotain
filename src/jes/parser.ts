@@ -1,8 +1,18 @@
 import {ParseTreeToken, SYNTAX_BOX, CHILDREN, PT} from "../pudu/parse_tree"
 import {Parser, Token} from "chevrotain"
 import {
-    allTokens, LCurly, Comma, RCurly, StringLiteral, Colon, LSquare, RSquare, NumberLiteral,
-    TrueLiteral, FalseLiteral, NullLiteral
+    allTokens,
+    LCurly,
+    Comma,
+    RCurly,
+    StringLiteral,
+    Colon,
+    LSquare,
+    RSquare,
+    NumberLiteral,
+    TrueLiteral,
+    FalseLiteral,
+    NullLiteral
 } from "./lexer"
 
 export class ObjectPT extends ParseTreeToken {}

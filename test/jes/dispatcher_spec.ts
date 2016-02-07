@@ -1,7 +1,13 @@
 import {BaseJsonDispatcher, SameActionDispatcher} from "../../src/jes/dispatcher"
 import {AstNode} from "../../src/pudu/ast"
 import {
-    ArrayNode, NumberNode, StringNode, NullNode, FalseNode, TrueNode, ObjectItemNode,
+    ArrayNode,
+    NumberNode,
+    StringNode,
+    NullNode,
+    FalseNode,
+    TrueNode,
+    ObjectItemNode,
     ObjectNode
 } from "../../src/jes/ast"
 

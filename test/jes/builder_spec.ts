@@ -2,11 +2,23 @@
 import {StringLiteral, NumberLiteral, TrueLiteral, FalseLiteral, NullLiteral} from "../../src/jes/lexer"
 import {PT} from "../../src/pudu/parse_tree"
 import {
-    buildStringNode, buildNumberNode, buildTrueNode, buildFalseNode, buildNullNode,
-    buildArrayNode, buildObjectItemNode, buildObjectNode
+    buildStringNode,
+    buildNumberNode,
+    buildTrueNode,
+    buildFalseNode,
+    buildNullNode,
+    buildArrayNode,
+    buildObjectItemNode,
+    buildObjectNode
 } from "../../src/jes/builder"
 import {
-    StringNode, NumberNode, TrueNode, FalseNode, NullNode, ArrayNode, ObjectItemNode,
+    StringNode,
+    NumberNode,
+    TrueNode,
+    FalseNode,
+    NullNode,
+    ArrayNode,
+    ObjectItemNode,
     ObjectNode
 } from "../../src/jes/ast"
 import {ObjectItemPT, ValuePT, ObjectPT, ArrayPT} from "../../src/jes/parser"

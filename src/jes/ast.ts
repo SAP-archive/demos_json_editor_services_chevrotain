@@ -1,5 +1,5 @@
 import {Nil, AstNodesArray, AstNode, NIL} from "../pudu/ast"
-import {Token} from  "chevrotain"
+import {Token} from "chevrotain"
 
 export type ValueNode = StringNode | NumberNode | TrueNode | FalseNode |
     NullNode | ArrayNode | ObjectNode | Nil

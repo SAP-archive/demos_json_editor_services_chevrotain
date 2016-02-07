@@ -1,9 +1,11 @@
 import {AstNode, NIL} from "../../src/pudu/ast"
-import {BaseBySuperTypeDispatcher,
+import {
+    BaseBySuperTypeDispatcher,
     findHandleMethodsOnDispatcher,
     validateBaseDispatcher,
     findClassNamesThatNeedDispatcherImpel,
-    IAstPatternDispatcher} from "../../src/pudu/dispatcher"
+    IAstPatternDispatcher
+} from "../../src/pudu/dispatcher"
 
 export class A extends AstNode {
     constructor(public b:B, public c:C, _parent:AstNode = NIL) {
