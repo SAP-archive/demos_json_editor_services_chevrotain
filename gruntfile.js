@@ -59,12 +59,7 @@ module.exports = function(grunt) {
         }
     })
 
-    grunt.loadNpmTasks('grunt-tslint')
-    grunt.loadNpmTasks("grunt-ts")
-    grunt.loadNpmTasks('grunt-contrib-clean')
-    grunt.loadNpmTasks('grunt-contrib-concat')
-    grunt.loadNpmTasks('grunt-mocha-istanbul')
-
+    require('load-grunt-tasks')(grunt);
 
     grunt.registerTask('build', [
         'clean:all',
