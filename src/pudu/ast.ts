@@ -1,11 +1,8 @@
 /* tslint:disable:no-use-before-declare */
 
 import * as _ from "lodash"
-import chevrotain = require ("chevrotain")
-import Token = chevrotain.Token
-import VirtualToken = chevrotain.VirtualToken
-
-import {IAstPatternDispatcher, BaseBySuperTypeDispatcher as BaseStrategy} from "./dispatcher"
+import {Token} from "chevrotain"
+import {IAstPatternDispatcher} from "./dispatcher"
 
 export abstract class AstNode {
 
