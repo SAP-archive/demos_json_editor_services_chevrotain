@@ -33,7 +33,6 @@ export function buildObjectItemNode(tree:ParseTree):ObjectItemNode {
     let key = undefined, value = undefined
     let syntaxBox = []
 
-    // TODO: how to express mandatory properties? (or all must have matched?)
     MATCH_CHILDREN(tree,
         {CASE: StringLiteral, THEN: (childTree) => key = buildStringNode(childTree)},
         {CASE: ValuePT, THEN: (childTree) => value = buildValueNode(childTree)},
@@ -48,7 +47,6 @@ export function buildObjectItemNode(tree:ParseTree):ObjectItemNode {
 export function buildValueNode(tree:ParseTree):ValueNode {
     let valueInstance = undefined
 
-    // TODO: how to express at least one must have matched?
     MATCH_CHILDREN(tree,
         {CASE: StringLiteral, THEN: (childTree) => valueInstance = buildStringNode(childTree)},
         {CASE: NumberLiteral, THEN: (childTree) => valueInstance = buildNumberNode(childTree)},
