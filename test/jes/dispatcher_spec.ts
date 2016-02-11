@@ -10,6 +10,7 @@ import {
     ObjectItemNode,
     ObjectNode
 } from "../../src/jes/ast"
+import {setParentRecursively} from "../utils";
 
 describe("The jes visitor implementation", () => {
 
@@ -58,6 +59,8 @@ describe("The jes visitor implementation", () => {
                     new TrueNode()
                 ])),
         ])
+
+        setParentRecursively(ast)
 
         expect(counter).to.equal(0)
         ast.visit(counterDispatcher)

@@ -1,5 +1,5 @@
 import {VirtualToken} from "chevrotain"
-import {AstNode, NIL} from "../../src/pudu/ast"
+import {AstNode, NIL, AstNodesArray} from "../../src/pudu/ast"
 import {ParseTree} from "../../src/pudu/parse_tree"
 import {MATCH_CHILDREN, setParent} from "../../src/pudu/builder"
 
@@ -16,6 +16,10 @@ class Identifier extends AstNode {}
 
 class GoPackageName extends AstNode {
     constructor(public pkgName:Identifier, public itemName:Identifier) {super()}
+}
+
+class FQN extends AstNodesArray<Identifier> {
+    constructor(public idents:Identifier[]) {super(idents)}
 }
 
 describe("The Core AstBuilder", () => {
@@ -78,12 +82,26 @@ describe("The Core AstBuilder", () => {
         )).to.throw("non exhaustive match")
     })
 
-    // TODO: consider setParent on constructor of AstNode instead of using a utility???
     it("Implements a utility to set the parent of an AstNode", () => {
         let heapPkg = new Identifier()
         let popFunc = new Identifier()
 
-        let fqn = new GoPackageName(heapPkg, popFunc)
+        let packageName = new GoPackageName(heapPkg, popFunc)
+
+        expect(heapPkg.parent()).to.equal(NIL)
+        expect(popFunc.parent()).to.equal(NIL)
+
+        setParent(packageName)
+
+        expect(heapPkg.parent()).to.equal(packageName)
+        expect(popFunc.parent()).to.equal(packageName)
+    })
+
+    it("Implements a utility to set the parent of an AstNodeArray", () => {
+        let heapPkg = new Identifier()
+        let popFunc = new Identifier()
+
+        let fqn = new FQN([heapPkg, popFunc])
 
         expect(heapPkg.parent()).to.equal(NIL)
         expect(popFunc.parent()).to.equal(NIL)

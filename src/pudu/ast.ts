@@ -32,9 +32,10 @@ export abstract class AstNode {
 
     children():AstNode[] {
         let kids = <any>_.filter(<any>this, (prop) => {
-            return prop instanceof AstNode && !(prop === NIL || prop.parent() === this)
+            return prop instanceof AstNode &&
+                prop !== NIL &&
+                prop.parent() === this
         })
-
         return kids
     }
 
@@ -74,7 +75,6 @@ export class AstNodesArray<T extends AstNode> extends AstNode {
         return this._children
     }
 }
-
 
 export class Nil extends AstNode {
 
