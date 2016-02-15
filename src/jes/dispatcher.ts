@@ -15,6 +15,7 @@ export class BaseJsonDispatcher<IN, OUT> extends BaseBySuperTypeDispatcher<IN, O
 
     constructor() {
         super()
+        // TODO: why does this repeat in all dispatchers? can some of this code be included in the BaseBySuperTypeDispatcher
         if (!BaseJsonDispatcher.performedBaseValidations) {
             BaseJsonDispatcher.performedBaseValidations = true
             // don't worry the static flag prevents infinite recursion

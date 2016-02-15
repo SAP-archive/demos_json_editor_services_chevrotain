@@ -58,6 +58,8 @@ export abstract class AstNode {
     }
 }
 
+// TODO: AstNodesArray? or support array properties in children() on AstNode?
+// TODO: Maybe we don't need AstNodesArray at all? it seems to just complicates things...
 export class AstNodesArray<T extends AstNode> extends AstNode {
     protected _children:T[]
 
