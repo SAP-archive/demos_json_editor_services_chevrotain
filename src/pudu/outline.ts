@@ -109,7 +109,7 @@ export function removeOutlineNodes(outline:IOutlineNode,
 function removeOutlineNodesInternal(outline:IOutlineNode,
                                     predicate:(outline:IOutlineNode) => boolean):IOutlineNode {
 
-    let filteredChildren = _.filter(outline.children, predicate)
+    let filteredChildren = _.reject(outline.children, predicate)
     outline.children = filteredChildren
 
     _.forEach(outline.children, (currChild) => removeOutlineNodesInternal(currChild, predicate))
@@ -128,8 +128,7 @@ export function replaceOutlineNodes(outline:IOutlineNode, replacementFunc:(outli
 
 
 function replaceOutlineNodesInternal(outline:IOutlineNode, replacementFunc:(outline:IOutlineNode) => IOutlineNode):IOutlineNode {
-    let filteredChildren = _.map(outline.children, replacementFunc)
-    outline.children = filteredChildren
+    outline.children = _.map(outline.children, replacementFunc)
 
     _.forEach(outline.children, (currChild) => replaceOutlineNodesInternal(currChild, replacementFunc))
 

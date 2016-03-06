@@ -4,6 +4,8 @@ import {Token} from "chevrotain"
 export type ValueNode = StringNode | NumberNode | TrueNode | FalseNode |
     NullNode | ArrayNode | ObjectNode | Nil
 
+export type JsonRootNode = ObjectNode | ArrayNode
+
 export class ObjectNode extends AstNodesArray <ObjectItemNode> {
 
     get size():number {
