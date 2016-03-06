@@ -10,7 +10,7 @@ import {
     ObjectItemNode,
     ObjectNode
 } from "../../src/jes/ast"
-import {setParentRecursively} from "../utils";
+import {setParentRecursively} from "../utils"
 
 describe("The jes visitor implementation", () => {
 
