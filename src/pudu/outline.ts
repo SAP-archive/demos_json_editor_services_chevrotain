@@ -58,19 +58,93 @@ export function compareByPosition(first:IOutlineNode, second:IOutlineNode):numbe
     return null
 }
 
-/**
- *  side effect!
- *  modifies the unsortedOutline in place.
- */
 export function sortOutline(unsortedOutline:IOutlineNode,
                             comparator:Comparator):IOutlineNode {
 
+    let copyOfUnsortedOutline = cloneOutline(unsortedOutline)
+    return sortOutlineInternal(copyOfUnsortedOutline, comparator)
+
+}
+
+function sortOutlineInternal(unsortedOutline:IOutlineNode,
+                             comparator:Comparator):IOutlineNode {
+
     _.forEach(unsortedOutline.children, (currChild) => {
-        sortOutline(currChild, comparator)
+        sortOutlineInternal(currChild, comparator)
     })
 
     unsortedOutline.children.sort(comparator)
 
-    // has been modified
     return unsortedOutline
+}
+
+
+/**
+ * Clones the outline (name/children), but not the AstNode property
+ * whose reference is simply copied.
+ */
+export function cloneOutline(outlineToClone:IOutlineNode):IOutlineNode {
+
+    let clonedChildren = _.map(outlineToClone.children, cloneOutline)
+
+    let cloneOutlineNode = {
+        name:     outlineToClone.name, // strings are immutable
+        node:     outlineToClone.node, // only copy the reference to avoid inc
+        children: clonedChildren
+    }
+
+    return cloneOutlineNode
+}
+
+/**
+ * creates a new OutlineNode, without nested outlineNodes for which the application of the predicate is true
+ */
+export function removeOutlineNodes(outline:IOutlineNode,
+                                   predicate:(outline:IOutlineNode) => boolean):IOutlineNode {
+
+    let copyOfOutline = cloneOutline(outline)
+    return removeOutlineNodesInternal(copyOfOutline, predicate)
+}
+
+function removeOutlineNodesInternal(outline:IOutlineNode,
+                                    predicate:(outline:IOutlineNode) => boolean):IOutlineNode {
+
+    let filteredChildren = _.filter(outline.children, predicate)
+    outline.children = filteredChildren
+
+    _.forEach(outline.children, (currChild) => removeOutlineNodesInternal(currChild, predicate))
+
+    return outline
+}
+
+/**
+ * creates a new OutlineNode, in which nested nodes will be replaced by the result of calling replacementFunc.
+ * Note that the replacement func may be the identity function for some set of inputs.
+ */
+export function replaceOutlineNodes(outline:IOutlineNode, replacementFunc:(outline:IOutlineNode) => IOutlineNode):IOutlineNode {
+    let copyOfOutline = cloneOutline(outline)
+    return replaceOutlineNodesInternal(copyOfOutline, replacementFunc)
+}
+
+
+function replaceOutlineNodesInternal(outline:IOutlineNode, replacementFunc:(outline:IOutlineNode) => IOutlineNode):IOutlineNode {
+    let filteredChildren = _.map(outline.children, replacementFunc)
+    outline.children = filteredChildren
+
+    _.forEach(outline.children, (currChild) => replaceOutlineNodesInternal(currChild, replacementFunc))
+
+    return outline
+}
+
+/**
+ * returns an array composed of all the outlines nodes in the input outline "tree".
+ */
+export function flattenOutline(outline:IOutlineNode):IOutlineNode[] {
+
+    let result = []
+    result.push(outline)
+
+    _.forEach(outline.children, (currChild) => result.concat(flattenOutline(currChild)))
+
+    return result
 }
