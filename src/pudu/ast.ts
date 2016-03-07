@@ -82,44 +82,29 @@ export abstract class AstNode {
             return NO_POSITION
         }
 
-        let position = _.reduce<Token, ITextPosition>(<any>allActualTokens, (resultPosition:ITextPosition, currToken) => {
-            if (currToken.offset < resultPosition.startOffset) {
-                resultPosition.startOffset = currToken.offset
-            }
+        let firstToken = _.first(allActualTokens)
+        let lastToken = _.first(allActualTokens)
 
-            if (currToken.startLine < resultPosition.startLine) {
-                resultPosition.startLine = currToken.startLine
+        // this assumes that tokens never overlap
+        _.forEach(allActualTokens, (currToken:Token) => {
+            if (currToken.offset < firstToken.offset) {
+                firstToken = currToken
             }
-
-            if (currToken.startColumn < resultPosition.startColumn) {
-                resultPosition.startColumn = currToken.startColumn
+            else if (currToken.offset > lastToken.offset) {
+                lastToken = currToken
             }
-
-            let currEndOffset = currToken.offset + currToken.image.length
-            if (currEndOffset > resultPosition.endOffset) {
-                resultPosition.endOffset = currEndOffset
-            }
-
-            if (currToken.endLine > resultPosition.endLine) {
-                resultPosition.endLine = currToken.endLine
-            }
-
-            if (currToken.endColumn > resultPosition.endColumn) {
-                resultPosition.endColumn = currToken.endColumn
-            }
-
-            return resultPosition
-        }, {
-            startOffset: Infinity,
-            startLine:   Infinity,
-            startColumn: Infinity,
-            endOffset:   -Infinity,
-            endLine:     -Infinity,
-            endColumn:   -Infinity
         })
 
-        return position
+        return {
+            startOffset: firstToken.offset,
+            startLine:   firstToken.startLine,
+            startColumn: firstToken.startColumn,
+            endOffset:   lastToken.offset + lastToken.image.length,
+            endLine:     lastToken.endLine,
+            endColumn:   lastToken.endColumn
+        }
     }
+
     get syntaxBox():Token[] {
         // TODO: this is mutable, perhaps freeze it in the constructor?
         return this._syntaxBox

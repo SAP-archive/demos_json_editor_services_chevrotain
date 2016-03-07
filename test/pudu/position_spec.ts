@@ -28,8 +28,8 @@ describe("The AstNode's textual position capabilities", () => {
     })
 
     it("can extract textual position information from a complex AstNode", () => {
-        let b = new B(NIL, [new Token("bamba", 2, 3, 4, 5, 6), new Token("bisli", 100, 50, 51, 52, 53)])
-        let a = new A(b, NIL, [new Token("pizza", 1, 4, 5, 6, 6)])
+        let b = new B(NIL, [new Token("bamba", 1, 3, 4, 5, 6), new Token("pizza", 5, 4, 5, 6, 6)])
+        let a = new A(b, NIL, [new Token("bisli", 100, 50, 51, 52, 53)])
         setParentRecursively(a)
 
         let actual = a.position()
