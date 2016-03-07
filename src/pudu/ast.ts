@@ -4,6 +4,27 @@ import * as _ from "lodash"
 import {Token} from "chevrotain"
 import {IAstPatternDispatcher} from "./dispatcher"
 
+export interface ITextPosition {
+    startOffset: number
+    startLine: number
+    startColumn: number
+    endOffset: number
+    endLine: number
+    endColumn: number
+}
+
+export const NO_POSITION:ITextPosition = {
+    startOffset: -1,
+    startLine:   -1,
+    startColumn: -1,
+    endOffset:   -1,
+    endLine:     -1,
+    endColumn:   -1
+}
+
+// all your state is belong to us.
+Object.freeze(NO_POSITION)
+
 export abstract class AstNode {
 
     constructor(protected _parent:AstNode = NIL,
@@ -52,6 +73,53 @@ export abstract class AstNode {
         })
     }
 
+    position():ITextPosition {
+        let meAndDescendantsNodes = this.descendants().concat([this])
+        let allTokens = _.flatten(_.map(meAndDescendantsNodes, (currChild) => currChild.syntaxBox))
+        let allActualTokens = _.reject(allTokens, (currToken) => currToken.isInsertedInRecovery)
+
+        if (_.isEmpty(allActualTokens)) {
+            return NO_POSITION
+        }
+
+        let position = _.reduce<Token, ITextPosition>(<any>allActualTokens, (resultPosition:ITextPosition, currToken) => {
+            if (currToken.offset < resultPosition.startOffset) {
+                resultPosition.startOffset = currToken.offset
+            }
+
+            if (currToken.startLine < resultPosition.startLine) {
+                resultPosition.startLine = currToken.startLine
+            }
+
+            if (currToken.startColumn < resultPosition.startColumn) {
+                resultPosition.startColumn = currToken.startColumn
+            }
+
+            let currEndOffset = currToken.offset + currToken.image.length
+            if (currEndOffset > resultPosition.endOffset) {
+                resultPosition.endOffset = currEndOffset
+            }
+
+            if (currToken.endLine > resultPosition.endLine) {
+                resultPosition.endLine = currToken.endLine
+            }
+
+            if (currToken.endColumn > resultPosition.endColumn) {
+                resultPosition.endColumn = currToken.endColumn
+            }
+
+            return resultPosition
+        }, {
+            startOffset: Infinity,
+            startLine:   Infinity,
+            startColumn: Infinity,
+            endOffset:   -Infinity,
+            endLine:     -Infinity,
+            endColumn:   -Infinity
+        })
+
+        return position
+    }
     get syntaxBox():Token[] {
         // TODO: this is mutable, perhaps freeze it in the constructor?
         return this._syntaxBox
