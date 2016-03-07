@@ -4,13 +4,13 @@ import * as _ from "lodash"
 
 export interface IOutlineNode {
     name: string
-    node: AstNode
+    astNode: AstNode
     children: IOutlineNode[]
 }
 
 export const EMPTY_OUTLINE:IOutlineNode = {
     name:     "",
-    node:     NIL,
+    astNode:  NIL,
     children: []
 }
 
@@ -40,7 +40,7 @@ export function buildOutline(astNode:AstNode, dispatcher:IOutlineDispatcher):IOu
 
     let outlineNode:IOutlineNode = {
         name:     name,
-        node:     astNode,
+        astNode:  astNode,
         children: children
     }
 
@@ -89,7 +89,7 @@ export function cloneOutline(outlineToClone:IOutlineNode):IOutlineNode {
 
     let cloneOutlineNode = {
         name:     outlineToClone.name, // strings are immutable
-        node:     outlineToClone.node, // only copy the reference to avoid inc
+        astNode:     outlineToClone.astNode, // only copy the reference to avoid inc
         children: clonedChildren
     }
 

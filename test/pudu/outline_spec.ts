@@ -80,30 +80,30 @@ describe("The pudu outline capabilities", () => {
     it("can create an outline from an Ast", () => {
         let expected = {
             name:     "api",
-            node:     api,
+            astNode:     api,
             children: [
                 {
                     name:     "foo",
-                    node:     foo,
+                    astNode:     foo,
                     children: []
                 },
                 {
                     name:     "bar",
-                    node:     bar,
+                    astNode:     bar,
                     children: [
                         {
                             name:     "ima",
-                            node:     ima,
+                            astNode:     ima,
                             children: []
                         },
                         {
                             name:     "aba",
-                            node:     aba,
+                            astNode:     aba,
                             children: []
                         },
                         {
                             name:     "bamba",
-                            node:     bamba,
+                            astNode:     bamba,
                             children: []
                         }
                     ]
@@ -116,32 +116,32 @@ describe("The pudu outline capabilities", () => {
     it("can sort an outline alphabetically", () => {
         let expected = {
             name:     "api",
-            node:     api,
+            astNode:     api,
             children: [
                 {
                     name:     "bar",
-                    node:     bar,
+                    astNode:     bar,
                     children: [
                         {
                             name:     "aba",
-                            node:     aba,
+                            astNode:     aba,
                             children: []
                         },
                         {
                             name:     "bamba",
-                            node:     bamba,
+                            astNode:     bamba,
                             children: []
                         },
                         {
                             name:     "ima",
-                            node:     ima,
+                            astNode:     ima,
                             children: []
                         }
                     ]
                 },
                 {
                     name:     "foo",
-                    node:     foo,
+                    astNode:     foo,
                     children: []
                 }]
         }
@@ -161,13 +161,13 @@ describe("The pudu outline capabilities", () => {
             it("can compare different lowcase strings", () => {
                 let bigger:IOutlineNode = {
                     name:     "bamba",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 
                 let smaller:IOutlineNode = {
                     name:     "aba",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 
@@ -178,13 +178,13 @@ describe("The pudu outline capabilities", () => {
             it("can compare different multicase strings", () => {
                 let bigger:IOutlineNode = {
                     name:     "Dog",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 
                 let smaller:IOutlineNode = {
                     name:     "caT",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 
@@ -195,13 +195,13 @@ describe("The pudu outline capabilities", () => {
             it("can compare equal lowcase strings", () => {
                 let identical1:IOutlineNode = {
                     name:     "equal opportunity policy",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 
                 let identical2:IOutlineNode = {
                     name:     "equal opportunity policy",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 
@@ -212,13 +212,13 @@ describe("The pudu outline capabilities", () => {
             it("can compare equal multi case strings", () => {
                 let identical1:IOutlineNode = {
                     name:     "Equal opporTunity polIcy",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 
                 let identical2:IOutlineNode = {
                     name:     "Equal opporTunity polIcy",
-                    node:     NIL,
+                    astNode:  NIL,
                     children: []
                 }
 

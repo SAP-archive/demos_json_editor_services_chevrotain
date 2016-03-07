@@ -27,8 +27,8 @@ export function buildJsonOutline(node:JsonRootNode):IOutlineNode {
     let withoutSingleChildObjects = replaceOutlineNodes(rawOutline, (currOutline) => {
         // skip collections (ObjectNode/ArrayNode) which has only a single item.
         if (currOutline.children.length === 1 &&
-            (currOutline.node instanceof ObjectNode ||
-            currOutline.node instanceof ArrayNode)) {
+            (currOutline.astNode instanceof ObjectNode ||
+            currOutline.astNode instanceof ArrayNode)) {
             return _.first(currOutline.children)
         }
 
@@ -42,15 +42,15 @@ export function buildJsonOutline(node:JsonRootNode):IOutlineNode {
 }
 
 function isCollectionNode(outline:IOutlineNode):boolean {
-    return outline.node instanceof ArrayNode ||
-        outline.node instanceof ObjectNode
+    return outline.astNode instanceof ArrayNode ||
+        outline.astNode instanceof ObjectNode
 }
 
 function isKeyLess(outline:IOutlineNode):boolean {
     // not very effective performance wise, but probably not relevant for real world inputs sizes.
     let allChildren = flattenOutline(outline)
     return !_.some(allChildren,
-        (currChild) => currChild.node instanceof ObjectItemNode)
+        (currChild) => currChild.astNode instanceof ObjectItemNode)
 }
 
 class JsonOutlineDispatcher extends BaseJsonDispatcher<void, string> implements IOutlineDispatcher {
