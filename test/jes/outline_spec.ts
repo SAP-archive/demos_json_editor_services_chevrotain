@@ -1,6 +1,5 @@
 import {buildJsonOutline} from "../../src/jes/outline"
 import {ObjectItemNode, StringNode, NumberNode, ObjectNode, ArrayNode} from "../../src/jes/ast"
-import {setParentRecursively} from "../utils"
 
 describe("The jes outline capabilities", () => {
 
@@ -11,7 +10,6 @@ describe("The jes outline capabilities", () => {
         let key3 = new ObjectItemNode(new StringNode("key3"), new NumberNode("999"))
 
         let objectNode = new ObjectNode([key1, key2, key3])
-        setParentRecursively(objectNode)
 
         let expected = {
             name:     "object",
@@ -45,7 +43,6 @@ describe("The jes outline capabilities", () => {
         let key3 = new ObjectItemNode(new StringNode("key3"), new NumberNode("999"))
 
         let arrayNode = new ArrayNode([key1, key2, key3])
-        setParentRecursively(arrayNode)
 
         let expected = {
             name:     "array",
@@ -81,7 +78,6 @@ describe("The jes outline capabilities", () => {
         let key2 = new ObjectItemNode(new StringNode("key2"), nestedObject)
 
         let objectNode = new ObjectNode([key1, key2])
-        setParentRecursively(objectNode)
 
         let expected = {
             name:     "object",
@@ -113,7 +109,6 @@ describe("The jes outline capabilities", () => {
         let keylessNested = new ArrayNode([new ArrayNode([new ObjectNode([])])])
         let key2 = new ObjectItemNode(new StringNode("key2"), keylessNested)
         let objectNode = new ObjectNode([key1, key2])
-        setParentRecursively(objectNode)
 
         let expected = {
             name:     "object",

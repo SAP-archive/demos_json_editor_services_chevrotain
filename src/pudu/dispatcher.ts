@@ -1,5 +1,4 @@
-
-import {AstNode, AstNodesArray} from "./ast"
+import {AstNode} from "./ast"
 import * as utils from "./utils"
 import * as _ from "lodash"
 const HANDLE = "handle"
@@ -65,10 +64,6 @@ export abstract class BaseBySuperTypeDispatcher<IN, OUT> implements IAstPatternD
         return undefined
     }
 
-    handleAstNodesArray<T extends AstNode>(node:AstNodesArray<T>, param?:IN, currClass?):OUT {
-        return this.dispatchAsSuperClass(node, param, currClass)
-    }
-
     /**
      * Will return an instance of a BaseDispatcher for a specific Ast node's hierarchy
      * 'against' which validations will be performed.
@@ -117,7 +112,7 @@ export abstract class BaseBySuperTypeDispatcher<IN, OUT> implements IAstPatternD
      */
     protected getSupportedClassNames():string[] {
         // TODO: avoid hardcoded values
-        return [utils.functionName(AstNode), utils.functionName(AstNodesArray)]
+        return [utils.functionName(AstNode)]
     }
 }
 

@@ -1,4 +1,4 @@
-import {Nil, AstNodesArray, AstNode, NIL} from "../pudu/ast"
+import {Nil, AstNode, NIL, setParent} from "../pudu/ast"
 import {Token} from "chevrotain"
 
 export type ValueNode = StringNode | NumberNode | TrueNode | FalseNode |
@@ -6,10 +6,22 @@ export type ValueNode = StringNode | NumberNode | TrueNode | FalseNode |
 
 export type JsonRootNode = ObjectNode | ArrayNode
 
-export class ObjectNode extends AstNodesArray <ObjectItemNode> {
+export class ObjectNode extends AstNode {
 
-    get size():number {
-        return this._children.length
+    constructor(private _items:ObjectItemNode[],
+                _parent:AstNode = NIL,
+                _syntaxBox:Token[] = []) {
+        super(_parent, _syntaxBox)
+        setParent(this)
+        Object.freeze(_items)
+    }
+
+    get items():ObjectItemNode[] {
+        return this._items
+    }
+
+    get key():ObjectItemNode[] {
+        return this._items
     }
 }
 
@@ -20,6 +32,7 @@ export class ObjectItemNode extends AstNode {
                 _parent:AstNode = NIL,
                 _syntaxBox:Token[] = []) {
         super(_parent, _syntaxBox)
+        setParent(this)
     }
 
     get key():StringNode {
@@ -31,10 +44,18 @@ export class ObjectItemNode extends AstNode {
     }
 }
 
-export class ArrayNode extends AstNodesArray<ValueNode> {
+export class ArrayNode extends AstNode {
 
-    get length():number {
-        return this._children.length
+    constructor(private _elements:ValueNode[],
+                _parent:AstNode = NIL,
+                _syntaxBox:Token[] = []) {
+        super(_parent, _syntaxBox)
+        setParent(this)
+        Object.freeze(_elements)
+    }
+
+    get elements():ValueNode[] {
+        return this._elements
     }
 }
 
@@ -43,6 +64,7 @@ export class StringNode extends AstNode {
                 _parent:AstNode = NIL,
                 _syntaxBox:Token[] = []) {
         super(_parent, _syntaxBox)
+        setParent(this)
     }
 
     get value():string {
@@ -55,6 +77,7 @@ export class NumberNode extends AstNode {
                 _parent:AstNode = NIL,
                 _syntaxBox:Token[] = []) {
         super(_parent, _syntaxBox)
+        setParent(this)
     }
 
     // using a 'string' type to avoid possible precision issues in converting JSON numbers to javascript numbers

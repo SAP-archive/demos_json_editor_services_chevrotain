@@ -107,7 +107,7 @@ describe("The jes ast builder", () => {
 
         let astOutput = buildObjectNode(ptInput)
         expect(astOutput).to.be.instanceOf(ObjectNode)
-        expect(astOutput.size).to.equal(3)
+        expect(astOutput.items.length).to.equal(3)
         expect(astOutput.children()[0]).to.be.instanceOf(ObjectItemNode)
         expect(astOutput.children()[1]).to.be.instanceOf(ObjectItemNode)
         expect(astOutput.children()[2]).to.be.instanceOf(ObjectItemNode)

@@ -2,24 +2,25 @@ import {
     IOutlineNode, compareAlphabetically, IOutlineDispatcher, NO_OUTLINE_FOR_NODE,
     buildOutline, sortOutline
 } from "../../src/pudu/outline"
-import {NIL, AstNode, AstNodesArray} from "../../src/pudu/ast"
+import {NIL, AstNode, setParent} from "../../src/pudu/ast"
 import {BaseBySuperTypeDispatcher, IAstPatternDispatcher} from "../../src/pudu/dispatcher"
-import {setParentRecursively} from "../utils"
 
-class Interface extends AstNodesArray<Method> {
+class Interface extends AstNode {
     constructor(public name:string,
                 public methods:Method[],
                 public _parent:AstNode = NIL) {
-        super(methods, _parent)
+        super(_parent)
+        setParent(this)
     }
 }
 
-class Method extends AstNodesArray<Param> {
+class Method extends AstNode {
     constructor(public name:string,
                 public params:Param[],
                 public isExported:boolean = true,
                 _parent:AstNode = NIL) {
-        super(params, _parent)
+        super(_parent)
+        setParent(this)
     }
 }
 
@@ -28,6 +29,7 @@ class Param extends AstNode {
                 public type:Type,
                 _parent:AstNode = NIL) {
         super(_parent)
+        setParent(this)
     }
 }
 
@@ -74,8 +76,6 @@ describe("The pudu outline capabilities", () => {
         foo,
         bar
     ])
-
-    setParentRecursively(api)
 
     it("can create an outline from an Ast", () => {
         let expected = {

@@ -1,7 +1,7 @@
 import {VirtualToken} from "chevrotain"
-import {AstNode, NIL, AstNodesArray} from "../../src/pudu/ast"
+import {AstNode, NIL, setParent} from "../../src/pudu/ast"
 import {ParseTree} from "../../src/pudu/parse_tree"
-import {MATCH_CHILDREN, setParent} from "../../src/pudu/builder"
+import {MATCH_CHILDREN} from "../../src/pudu/builder"
 
 class Root extends VirtualToken {}
 class A extends VirtualToken {}
@@ -15,11 +15,17 @@ class C3 extends C {}
 class Identifier extends AstNode {}
 
 class GoPackageName extends AstNode {
-    constructor(public pkgName:Identifier, public itemName:Identifier) {super()}
+    constructor(public pkgName:Identifier, public itemName:Identifier) {
+        super()
+        setParent(this)
+    }
 }
 
-class FQN extends AstNodesArray<Identifier> {
-    constructor(public idents:Identifier[]) {super(idents)}
+class FQN extends AstNode {
+    constructor(public idents:Identifier[]) {
+        super()
+        setParent(this)
+    }
 }
 
 describe("The Core AstBuilder", () => {
@@ -82,34 +88,14 @@ describe("The Core AstBuilder", () => {
         )).to.throw("non exhaustive match")
     })
 
-    it("Implements a utility to set the parent of an AstNode", () => {
+    it("Implements a utility to set the parent of an AstNode during its constructor", () => {
         let heapPkg = new Identifier()
         let popFunc = new Identifier()
 
         let packageName = new GoPackageName(heapPkg, popFunc)
 
-        expect(heapPkg.parent()).to.equal(NIL)
-        expect(popFunc.parent()).to.equal(NIL)
-
-        setParent(packageName)
-
         expect(heapPkg.parent()).to.equal(packageName)
         expect(popFunc.parent()).to.equal(packageName)
-    })
-
-    it("Implements a utility to set the parent of an AstNodeArray", () => {
-        let heapPkg = new Identifier()
-        let popFunc = new Identifier()
-
-        let fqn = new FQN([heapPkg, popFunc])
-
-        expect(heapPkg.parent()).to.equal(NIL)
-        expect(popFunc.parent()).to.equal(NIL)
-
-        setParent(fqn)
-
-        expect(heapPkg.parent()).to.equal(fqn)
-        expect(popFunc.parent()).to.equal(fqn)
     })
 
 })

@@ -11,7 +11,7 @@ import {
     NullNode
 } from "./ast"
 import {ObjectItemPT, ObjectPT, ArrayPT, ValuePT} from "./parser"
-import {buildSyntaxBox, MATCH_CHILDREN, setParent} from "../pudu/builder"
+import {buildSyntaxBox, MATCH_CHILDREN} from "../pudu/builder"
 import {NIL} from "../pudu/ast"
 import {StringLiteral, NumberLiteral, NullLiteral, TrueLiteral, FalseLiteral} from "./lexer"
 
@@ -25,7 +25,6 @@ export function buildObjectNode(tree:ParseTree):ObjectNode {
     )
 
     let objectNodeInstance = new ObjectNode(objectItemNodes, NIL, syntaxBox)
-    setParent(objectNodeInstance)
     return objectNodeInstance
 }
 
@@ -40,7 +39,6 @@ export function buildObjectItemNode(tree:ParseTree):ObjectItemNode {
     )
 
     let objectItemNodeInstance = new ObjectItemNode(key, value, NIL, syntaxBox)
-    setParent(objectItemNodeInstance)
     return objectItemNodeInstance
 }
 
@@ -71,7 +69,6 @@ export function buildArrayNode(tree:ParseTree):ArrayNode {
     )
 
     let arrayNodeInstance = new ArrayNode(arrItems, NIL, syntaxBox)
-    setParent(arrayNodeInstance)
     return arrayNodeInstance
 }
 

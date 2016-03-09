@@ -52,12 +52,28 @@ export abstract class AstNode {
     }
 
     children():AstNode[] {
-        let kids = <any>_.filter(<any>this, (prop) => {
+
+        let isDirectChild = (prop) => {
             return prop instanceof AstNode &&
-                prop !== NIL &&
+                !(prop instanceof Nil) &&
                 prop.parent() === this
-        })
-        return kids
+        }
+
+        let allKids = _.reduce(<any>this, (result, prop) => {
+            if (isDirectChild(prop)) {
+                result.push(prop)
+            }
+            else if (_.isArray(prop)) {
+                _.forEach(prop, (currElem) => {
+                    if (isDirectChild(currElem)) {
+                        result.push(currElem)
+                    }
+                })
+            }
+            return result
+        }, [])
+
+        return allKids
     }
 
     /**
@@ -111,26 +127,6 @@ export abstract class AstNode {
     }
 }
 
-// TODO: AstNodesArray? or support array properties in children() on AstNode?
-// TODO: Maybe we don't need AstNodesArray at all? it seems to just complicates things...
-export class AstNodesArray<T extends AstNode> extends AstNode {
-    protected _children:T[]
-
-    constructor(subNodes:T[],
-                _parent:AstNode = NIL,
-                _syntaxBox:Token[] = []) {
-        super(_parent, _syntaxBox)
-        // TODO: is clone needed? ? it is not even deep clone
-        // TODO: verify is safe?  {} <- .
-        // TODO: maybe just freeze it?
-        this._children = <any>_.clone(subNodes)
-    }
-
-    children():AstNode[] {
-        return this._children
-    }
-}
-
 export class Nil extends AstNode {
 
     protected initialized = false
@@ -141,8 +137,9 @@ export class Nil extends AstNode {
             throw Error("Nil Node can only be initialized once")
         }
         this.initialized = true
-        this._parent = null
+        this._parent = NIL
     }
+
 
     ancestors():AstNode[] {
         return []
@@ -153,5 +150,35 @@ export class Nil extends AstNode {
     }
 }
 
-
 export const NIL:any = new Nil()
+Object.freeze(NIL)
+
+/**
+ * Reflective utility to makes it easier setting the parents of an AstNode's children.
+ * The children of an AstNode must have the parent property set, otherwise the most basic functionality
+ * won't work (children()/descendants()/visit()/...)
+ */
+export function setParent(node:AstNode):void {
+
+    function isDirectChild(prop) {
+        return prop instanceof AstNode && !(prop instanceof Nil)
+    }
+
+    let allKids = _.reduce(node, (result, prop, name:string) => {
+        if (isDirectChild(prop) && name !== "_parent") {
+            result.push(prop)
+        }
+        else if (_.isArray(prop)) {
+            _.forEach(prop, (currElem) => {
+                if (isDirectChild(currElem)) {
+                    result.push(currElem)
+                }
+            })
+        }
+        return result
+    }, [])
+
+    _.forEach(allKids, (currChild) => {
+        (<any>currChild)._parent = node
+    })
+}
