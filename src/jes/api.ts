@@ -22,3 +22,6 @@ export function analyzeText(text:string):ITextAnalysisResult {
         ast:         ast
     }
 }
+
+// TODO: should there be an API that also includes running the semantic checks?
+// if so what is the default configuration ?
