@@ -150,6 +150,7 @@ export class Nil extends AstNode {
     }
 }
 
+// TODO: rename? too similar to class name?
 export const NIL:any = new Nil()
 Object.freeze(NIL)
 

@@ -1,1 +1,1 @@
-/// <reference path="../../node_modules/chevrotain/bin/chevrotain.d.ts" />
+/// <reference path="../../node_modules/chevrotain/lib/chevrotain.d.ts" />
