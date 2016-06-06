@@ -1,4 +1,4 @@
-import {JsonLexer} from "../../src/jes/lexer"
+import {JsonLexer} from "../../../src/examples/json/lexer"
 
 describe("The Json lexer", () => {
 

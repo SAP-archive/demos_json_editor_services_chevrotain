@@ -4,10 +4,19 @@ import {
     findHandleMethodsOnDispatcher,
     validateBaseDispatcher,
     findClassNamesThatNeedDispatcherImpel
-} from "../pudu/dispatcher"
+} from "../../pudu/dispatcher"
 import * as jesAst from "./ast"
-import {ObjectNode, ObjectItemNode, ArrayNode, StringNode, NumberNode, TrueNode, FalseNode, NullNode} from "./ast"
-import {AstNode} from "../pudu/ast"
+import {
+    ObjectNode,
+    ObjectItemNode,
+    ArrayNode,
+    StringNode,
+    NumberNode,
+    TrueNode,
+    FalseNode,
+    NullNode
+} from "./ast"
+import {AstNode} from "../../pudu/ast"
 
 export class BaseJsonDispatcher<IN, OUT> extends BaseBySuperTypeDispatcher<IN, OUT> {
 

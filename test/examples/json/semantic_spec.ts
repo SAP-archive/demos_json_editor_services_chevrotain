@@ -1,10 +1,16 @@
-import {analyzeText, ITextAnalysisResult} from "../../src/jes/api"
-import {checkDuplicateKeys, checkReservedJavascriptKeyword} from "../../src/jes/semantics"
+import {
+    analyzeText,
+    ITextAnalysisResult
+} from "../../../src/examples/json/api"
+import {
+    checkDuplicateKeys,
+    checkReservedJavascriptKeyword
+} from "../../../src/examples/json/semantics"
 import * as _ from "lodash"
 
 
 function hasIssues(analysisResult:ITextAnalysisResult):boolean {
-    return _.isEmpty(analysisResult.lexErrors) && _.isEmpty(analysisResult.parseErrors)
+    return !_.isEmpty(analysisResult.lexErrors) || !_.isEmpty(analysisResult.parseErrors)
 }
 
 describe("The jes semantic checks", () => {
@@ -18,7 +24,7 @@ describe("The jes semantic checks", () => {
             "key2" : 333,
             "key3" : 444,
             "key1" : 111,
-            "key2" : 222,
+            "key2" : 222
             }`)
 
             let node = analysisResult.ast
@@ -62,11 +68,12 @@ describe("The jes semantic checks", () => {
                     "key2" : 333,
                     "key3" : 444,
                     "for" : 111,
-                    "key2" : 222,
-                    }`)
+                    "key2" : 222
+                }`)
 
             let node = analysisResult.ast
             expect(hasIssues(analysisResult)).to.be.false
+
 
             it("positive", () => {
 

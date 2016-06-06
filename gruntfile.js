@@ -16,7 +16,7 @@ module.exports = function(grunt) {
             },
 
             jes: {
-                src:     'bin/test/jes',
+                src:     'bin/test/examples/json',
                 options: {
                     mask:           '**/*spec.js',
                     coverageFolder: 'bin/coverage'
@@ -30,8 +30,7 @@ module.exports = function(grunt) {
             },
 
             files: {
-                // performance_spec causes issues with TS-Lint randomly crashing due to a very large sample string it contains.
-                src: ['src/pudu/**/*.ts', 'src/jes/**/*.ts', 'test/pudu/**/*.ts', 'test/jes/**/*.ts']
+                src: ['src/pudu/**/*.ts', 'src/examples/**/*.ts', 'test/pudu/**/*.ts', 'test/examples/**/*.ts']
             }
         },
 

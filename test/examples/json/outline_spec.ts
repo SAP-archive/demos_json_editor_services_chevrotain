@@ -1,5 +1,11 @@
-import {buildJsonOutline} from "../../src/jes/outline"
-import {ObjectItemNode, StringNode, NumberNode, ObjectNode, ArrayNode} from "../../src/jes/ast"
+import {buildJsonOutline} from "../../../src/examples/json/outline"
+import {
+    ObjectItemNode,
+    StringNode,
+    NumberNode,
+    ObjectNode,
+    ArrayNode
+} from "../../../src/examples/json/ast"
 
 describe("The jes outline capabilities", () => {
 
@@ -13,21 +19,21 @@ describe("The jes outline capabilities", () => {
 
         let expected = {
             name:     "object",
-            astNode:     objectNode,
+            astNode:  objectNode,
             children: [
                 {
                     name:     "key1",
-                    astNode:     key1,
+                    astNode:  key1,
                     children: []
                 },
                 {
                     name:     "key2",
-                    astNode:     key2,
+                    astNode:  key2,
                     children: []
                 },
                 {
                     name:     "key3",
-                    astNode:     key3,
+                    astNode:  key3,
                     children: []
                 }
             ]
@@ -46,21 +52,21 @@ describe("The jes outline capabilities", () => {
 
         let expected = {
             name:     "array",
-            astNode:     arrayNode,
+            astNode:  arrayNode,
             children: [
                 {
                     name:     "key1",
-                    astNode:     key1,
+                    astNode:  key1,
                     children: []
                 },
                 {
                     name:     "key2",
-                    astNode:     key2,
+                    astNode:  key2,
                     children: []
                 },
                 {
                     name:     "key3",
-                    astNode:     key3,
+                    astNode:  key3,
                     children: []
                 }
             ]
@@ -81,19 +87,19 @@ describe("The jes outline capabilities", () => {
 
         let expected = {
             name:     "object",
-            astNode:     objectNode,
+            astNode:  objectNode,
             children: [
                 {
                     name:     "key1",
-                    astNode:     key1,
+                    astNode:  key1,
                     children: []
                 },
                 {
                     name:     "key2",
-                    astNode:     key2,
+                    astNode:  key2,
                     children: [{
                         name:     "nested_key1",
-                        astNode:     nestedKey,
+                        astNode:  nestedKey,
                         children: []
                     }]
                 }
@@ -112,16 +118,16 @@ describe("The jes outline capabilities", () => {
 
         let expected = {
             name:     "object",
-            astNode:     objectNode,
+            astNode:  objectNode,
             children: [
                 {
                     name:     "key1",
-                    astNode:     key1,
+                    astNode:  key1,
                     children: []
                 },
                 {
                     name:     "key2",
-                    astNode:     key2,
+                    astNode:  key2,
                     children: []
                 }
             ]

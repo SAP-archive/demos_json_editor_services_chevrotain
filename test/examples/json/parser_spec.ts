@@ -1,5 +1,5 @@
-import {JsonLexer} from "../../src/jes/lexer"
-import {JsonParser} from "../../src/jes/parser"
+import {JsonLexer} from "../../../src/examples/json/lexer"
+import {JsonParser} from "../../../src/examples/json/parser"
 
 describe("The Json Parser", () => {
 

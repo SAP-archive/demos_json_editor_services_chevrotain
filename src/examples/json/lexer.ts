@@ -1,4 +1,7 @@
-import {Token, Lexer} from "chevrotain"
+import {
+    Token,
+    Lexer
+} from "chevrotain"
 import * as _ from "lodash"
 
 export class TrueLiteral extends Token { static PATTERN = /true/}

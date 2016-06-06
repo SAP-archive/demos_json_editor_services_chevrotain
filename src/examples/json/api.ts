@@ -2,11 +2,14 @@ import {ObjectNode} from "./ast"
 import {JsonLexer} from "./lexer"
 import {JsonParser} from "./parser"
 import {buildObjectNode} from "./builder"
-import {ILexingError, exceptions} from "chevrotain"
+import {
+    ILexingError,
+    exceptions
+} from "chevrotain"
 
 export interface ITextAnalysisResult {
-    lexErrors: ILexingError[],
-    parseErrors: exceptions.IRecognitionException[],
+    lexErrors:ILexingError[],
+    parseErrors:exceptions.IRecognitionException[],
     ast:ObjectNode
 }
 
@@ -17,9 +20,9 @@ export function analyzeText(text:string):ITextAnalysisResult {
     let ast = buildObjectNode(parseTree)
 
     return {
-        lexErrors:   lexResult.errors,
+        lexErrors: lexResult.errors,
         parseErrors: parser.errors,
-        ast:         ast
+        ast: ast
     }
 }
 

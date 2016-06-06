@@ -1,6 +1,12 @@
 // TODO: add syntaxBox checks
-import {StringLiteral, NumberLiteral, TrueLiteral, FalseLiteral, NullLiteral} from "../../src/jes/lexer"
-import {PT} from "../../src/pudu/parse_tree"
+import {
+    StringLiteral,
+    NumberLiteral,
+    TrueLiteral,
+    FalseLiteral,
+    NullLiteral
+} from "../../../src/examples/json/lexer"
+import {PT} from "../../../src/pudu/parse_tree"
 import {
     buildStringNode,
     buildNumberNode,
@@ -10,7 +16,7 @@ import {
     buildArrayNode,
     buildObjectItemNode,
     buildObjectNode
-} from "../../src/jes/builder"
+} from "../../../src/examples/json/builder"
 import {
     StringNode,
     NumberNode,
@@ -20,8 +26,14 @@ import {
     ArrayNode,
     ObjectItemNode,
     ObjectNode
-} from "../../src/jes/ast"
-import {ObjectItemPT, ValuePT, ObjectPT, ArrayPT} from "../../src/jes/parser"
+} from "../../../src/examples/json/ast"
+import {
+    ObjectItemPT,
+    ValuePT,
+    ObjectPT,
+    ArrayPT
+} from "../../../src/examples/json/parser"
+
 describe("The jes ast builder", () => {
 
     it("can build a StringNode Ast", () => {

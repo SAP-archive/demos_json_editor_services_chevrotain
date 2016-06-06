@@ -1,4 +1,4 @@
-import {analyzeText} from "../../src/jes/api"
+import {analyzeText} from "../../../src/examples/json/api"
 
 describe("JES text positions information", () => {
 

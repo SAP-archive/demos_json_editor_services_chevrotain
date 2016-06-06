@@ -1,6 +1,14 @@
 import * as _ from "lodash"
-import {ObjectNode, ObjectItemNode} from "./ast"
-import {ISemanticIssue, ERROR, WARNING, ISemanticCheckConfig} from "../pudu/semantics"
+import {
+    ObjectNode,
+    ObjectItemNode
+} from "./ast"
+import {
+    ISemanticIssue,
+    ERROR,
+    WARNING,
+    ISemanticCheckConfig
+} from "../../pudu/semantics"
 
 
 export const DEFAULT_SEMANTIC_CHECKS_CONFIG:ISemanticCheckConfig = [

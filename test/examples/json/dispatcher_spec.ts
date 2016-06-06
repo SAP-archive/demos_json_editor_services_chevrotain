@@ -1,5 +1,8 @@
-import {BaseJsonDispatcher, SameActionDispatcher} from "../../src/jes/dispatcher"
-import {AstNode} from "../../src/pudu/ast"
+import {
+    BaseJsonDispatcher,
+    SameActionDispatcher
+} from "../../../src/examples/json/dispatcher"
+import {AstNode} from "../../../src/pudu/ast"
 import {
     ArrayNode,
     NumberNode,
@@ -9,7 +12,7 @@ import {
     TrueNode,
     ObjectItemNode,
     ObjectNode
-} from "../../src/jes/ast"
+} from "../../../src/examples/json/ast"
 
 describe("The jes visitor implementation", () => {
 

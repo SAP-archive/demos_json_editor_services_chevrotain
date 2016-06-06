@@ -1,5 +1,13 @@
-import {ParseTreeToken, SYNTAX_BOX, CHILDREN, PT} from "../pudu/parse_tree"
-import {Parser, Token} from "chevrotain"
+import {
+    ParseTreeToken,
+    SYNTAX_BOX,
+    CHILDREN,
+    PT
+} from "../../pudu/parse_tree"
+import {
+    Parser,
+    Token
+} from "chevrotain"
 import {
     allTokens,
     LCurly,

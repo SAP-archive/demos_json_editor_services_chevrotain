@@ -7,7 +7,7 @@ import {
     replaceOutlineNodes,
     removeOutlineNodes,
     flattenOutline
-} from "../pudu/outline"
+} from "../../pudu/outline"
 import {
     ObjectNode,
     ObjectItemNode,

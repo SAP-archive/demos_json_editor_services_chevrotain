@@ -1,4 +1,9 @@
-import {Nil, AstNode, NIL, setParent} from "../pudu/ast"
+import {
+    Nil,
+    AstNode,
+    NIL,
+    setParent
+} from "../../pudu/ast"
 import {Token} from "chevrotain"
 
 export type ValueNode = StringNode | NumberNode | TrueNode | FalseNode |

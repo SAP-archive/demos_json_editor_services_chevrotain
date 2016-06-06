@@ -1,4 +1,7 @@
-import {ParseTree, SyntaxBoxPT} from "../pudu/parse_tree"
+import {
+    ParseTree,
+    SyntaxBoxPT
+} from "../../pudu/parse_tree"
 import {
     ObjectNode,
     ObjectItemNode,
@@ -10,10 +13,24 @@ import {
     FalseNode,
     NullNode
 } from "./ast"
-import {ObjectItemPT, ObjectPT, ArrayPT, ValuePT} from "./parser"
-import {buildSyntaxBox, MATCH_CHILDREN} from "../pudu/builder"
-import {NIL} from "../pudu/ast"
-import {StringLiteral, NumberLiteral, NullLiteral, TrueLiteral, FalseLiteral} from "./lexer"
+import {
+    ObjectItemPT,
+    ObjectPT,
+    ArrayPT,
+    ValuePT
+} from "./parser"
+import {
+    buildSyntaxBox,
+    MATCH_CHILDREN
+} from "../../pudu/builder"
+import {NIL} from "../../pudu/ast"
+import {
+    StringLiteral,
+    NumberLiteral,
+    NullLiteral,
+    TrueLiteral,
+    FalseLiteral
+} from "./lexer"
 
 export function buildObjectNode(tree:ParseTree):ObjectNode {
     let objectItemNodes = []
