@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "license": " Apache-2.0",
   "dependencies": {
+    "chevrotain": "*",
     "lodash": "~4.6.1",
-    "chevrotain": "*"
+    "xregexp": "^3.1.1"
   },
   "devDependencies": {
     "chai": "^3.4.1",

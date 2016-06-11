@@ -21,6 +21,14 @@ module.exports = function(grunt) {
                     mask:           '**/*spec.js',
                     coverageFolder: 'bin/coverage'
                 }
+            },
+
+            css: {
+                src:     'bin/test/examples/css',
+                options: {
+                    mask:           '**/*spec.js',
+                    coverageFolder: 'bin/coverage'
+                }
             }
         },
 
@@ -69,7 +77,8 @@ module.exports = function(grunt) {
     grunt.registerTask('test', [
             'build',
             'mocha_istanbul:pudu',
-            'mocha_istanbul:jes'
+            'mocha_istanbul:jes',
+            'mocha_istanbul:css'
         ]
     )
 }
