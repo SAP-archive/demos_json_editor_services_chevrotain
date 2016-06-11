@@ -129,7 +129,8 @@ export class Khz extends Freq {static PATTERN = MAKE_PATTERN("{{num}}khz", "i")}
 export class Percentage extends Token {static PATTERN = MAKE_PATTERN("{{num}}%", "i")}
 export class Num extends Token {static PATTERN = MAKE_PATTERN("{{num}}")}
 
-export const CssLexer = new Lexer([
+
+export const cssTokens = [
     Whitespace,
     Comment,
 
@@ -190,4 +191,6 @@ export const CssLexer = new Lexer([
     Khz,
     Percentage,
     Num // Num must appear after all the num forms with a suffix
-])
+]
+
+export const CssLexer = new Lexer(cssTokens)
