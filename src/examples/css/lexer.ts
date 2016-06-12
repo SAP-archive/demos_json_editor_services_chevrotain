@@ -51,8 +51,8 @@ export class Comment extends Token {
 }
 
 export class Uri extends Token {static PATTERN = Lexer.NA}
-export class UriString extends Token {static PATTERN = MAKE_PATTERN("url\\((:?{{spaces}})?({{string1}}|{{string2}})(:?{{spaces}})?\\)")}
-export class UriUrl extends Token {static PATTERN = MAKE_PATTERN("url\\((:?{{spaces}})?{{url}}(:?{{spaces}})?\\)")}
+export class UriString extends Uri {static PATTERN = MAKE_PATTERN("url\\((:?{{spaces}})?({{string1}}|{{string2}})(:?{{spaces}})?\\)")}
+export class UriUrl extends Uri {static PATTERN = MAKE_PATTERN("url\\((:?{{spaces}})?{{url}}(:?{{spaces}})?\\)")}
 export class Func extends Token {static PATTERN = MAKE_PATTERN("{{ident}}\\(")}
 export class Ident extends Token {static PATTERN = MAKE_PATTERN("{{ident}}")}
 

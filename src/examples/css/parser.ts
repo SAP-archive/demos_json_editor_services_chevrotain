@@ -77,25 +77,25 @@ export class CssParser extends Parser {
 
     contents = this.RULE("contents", () => {
         // @formatter:off
-            this.OR([
-                {ALT: () => { this.SUBRULE(this.ruleset)}},
-                {ALT: () => { this.SUBRULE(this.media)}},
-                {ALT: () => { this.SUBRULE(this.page)}}
-            ])
-            // @formatter:on
+        this.OR([
+            {ALT: () => { this.SUBRULE(this.ruleset)}},
+            {ALT: () => { this.SUBRULE(this.media)}},
+            {ALT: () => { this.SUBRULE(this.page)}}
+        ])
+        // @formatter:on
         this.SUBRULE3(this.cdcCdo)
     })
 
     // factor out repeating pattern for cdc/cdo
     cdcCdo = this.RULE("cdcCdo", () => {
         // @formatter:off
-            this.MANY(function () {
-                this.OR([
-                    {ALT: () => { this.CONSUME(Cdo)}},
-                    {ALT: () => { this.CONSUME(Cdc)}}
-                ])
-            })
-            // @formatter:on
+        this.MANY(function () {
+            this.OR([
+                {ALT: () => { this.CONSUME(Cdo)}},
+                {ALT: () => { this.CONSUME(Cdc)}}
+            ])
+        })
+        // @formatter:on
     })
 
     // IMPORT_SYM S*
@@ -125,16 +125,11 @@ export class CssParser extends Parser {
         this.CONSUME(RCurly)
     })
 
-    // medium [ COMMA S* medium]*
+    // medium [ COMMA S* IDENT S]*
     media_list = this.RULE("media_list", () => {
         this.MANY_SEP(Comma, () => {
-            this.SUBRULE(this.medium)
+            this.SUBRULE(this.identifier)
         })
-    })
-
-    // IDENT S*
-    medium = this.RULE("medium", () => {
-        this.CONSUME(Ident)
     })
 
     // PAGE_SYM S* pseudo_page?
@@ -148,7 +143,7 @@ export class CssParser extends Parser {
         this.SUBRULE(this.declarationsGroup)
     })
 
-    // "{" S* declaration? [ "" S* declaration? ]* "}" S*
+    // "{" S* declaration? [ ";" S* declaration? ]* "}" S*
     // factored out repeating grammar pattern
     declarationsGroup = this.RULE("declarationsGroup", () => {
         this.CONSUME(LCurly)
@@ -168,11 +163,11 @@ export class CssParser extends Parser {
     // ":" IDENT S*
     pseudo_page = this.RULE("pseudo_page", () => {
         this.CONSUME(Colon)
-        this.CONSUME(Ident)
+        this.SUBRULE(this.identifier)
     })
 
     // "/" S* | "," S*
-    operator = this.RULE("operator", () => {
+    binaryOperator = this.RULE("binaryOperator", () => {
         // @formatter:off
             this.OR([
                 {ALT: () => { this.CONSUME(Slash)}},
@@ -199,11 +194,6 @@ export class CssParser extends Parser {
                 {ALT: () => { this.CONSUME(Plus)}}
             ])
             // @formatter:on
-    })
-
-    // IDENT S*
-    property = this.RULE("property", () => {
-        this.CONSUME(Ident)
     })
 
     // selector [ "," S* selector ]*
@@ -258,32 +248,32 @@ export class CssParser extends Parser {
                 {ALT: () => { this.SUBRULE(this.attrib) }},
                 {ALT: () => { this.SUBRULE(this.pseudo) }}
             ])
-            // @formatter:off
-        })
+            // @formatter:on
+    })
 
-        // "." IDENT
-        classSelector = this.RULE("classSelector", function () {
-            this.CONSUME(Dot)
-            this.CONSUME(Ident)
-        })
+    // "." IDENT
+    classSelector = this.RULE("classSelector", function () {
+        this.CONSUME(Dot)
+        this.SUBRULE(this.identifier)
+    })
 
-        // IDENT | "*"
-        element_name = this.RULE("element_name", function () {
+    // IDENT | "*"
+    element_name = this.RULE("element_name", function () {
             // @formatter:off
             this.OR([
-                {ALT: () => { this.CONSUME(Ident) }},
+                {ALT: () => { this.SUBRULE(this.identifier) }},
                 {ALT: () => { this.CONSUME(Star) }}
             ])
+            // @formatter:on
+    })
+
+    // "[" S* IDENT S* [ [ "=" | INCLUDES | DASHMATCH ] S* [ IDENT | STRING ] S* ]? "]"
+    attrib = this.RULE("attrib", function () {
+        this.CONSUME(LSquare)
+        this.SUBRULE(this.identifier)
+
+        this.OPTION(() => {
             // @formatter:off
-        })
-
-        // "[" S* IDENT S* [ [ "=" | INCLUDES | DASHMATCH ] S* [ IDENT | STRING ] S* ]? "]"
-        attrib = this.RULE("attrib", function () {
-            this.CONSUME(LSquare)
-            this.CONSUME(Ident)
-
-            this.OPTION(() => {
-                // @formatter:off
                 this.OR([
                     {ALT: () => { this.CONSUME(Equals) }},
                     {ALT: () => { this.CONSUME(Includes) }},
@@ -294,52 +284,50 @@ export class CssParser extends Parser {
                     {ALT: () => { this.CONSUME2(Ident) }},
                     {ALT: () => { this.CONSUME(StringLiteral) }}
                 ])
-                // @formatter:off
-            })
-            this.CONSUME(RSquare)
+                // @formatter:on
         })
+        this.CONSUME(RSquare)
+    })
 
-        // ":" [ IDENT | FUNCTION S* [IDENT S*]? ")" ]
-        pseudo = this.RULE("pseudo", function () {
-            this.CONSUME(Colon)
-            // @formatter:off
+    // ":" [ IDENT | FUNCTION S* [IDENT S*]? ")" ]
+    pseudo = this.RULE("pseudo", function () {
+        this.CONSUME(Colon)
+        // @formatter:off
             this.OR([
                 {ALT: () => {
-                    this.CONSUME(Ident)
+                    this.SUBRULE(this.identifier)
                 }},
                 {ALT: () => {
-                    this.CONSUME(Func)
-                    this.OPTION(() => {
-                        this.CONSUME2(Ident)
-                    })
-                    this.CONSUME(RParen)
+                    this.SUBRULE(this.pseudoFunc)
                 }}
             ])
             // @formatter:on
-        })
+    })
 
-    // property ":" S* expr prio?
+    pseudoFunc = this.RULE("pseudoFunc", function () {
+        this.CONSUME(Func)
+        this.OPTION(() => {
+            this.CONSUME2(Ident)
+        })
+        this.CONSUME(RParen)
+    })
+
+    // IDENT S* ":" S* expr [IMPORTANT_SYM S*]?
     declaration = this.RULE("declaration", () => {
-        this.SUBRULE(this.property)
+        this.SUBRULE(this.identifier)
         this.CONSUME(Colon)
         this.SUBRULE(this.expr)
-
         this.OPTION(() => {
-            this.SUBRULE(this.prio)
+            this.CONSUME(ImportantSym)
         })
     })
 
-    // IMPORTANT_SYM S*
-    prio = this.RULE("prio", () => {
-        this.CONSUME(ImportantSym)
-    })
-
-    // term [ operator? term ]*
+    // term [ binaryOperator? term ]*
     expr = this.RULE("expr", () => {
         this.SUBRULE(this.term)
         this.MANY(() => {
             this.OPTION(() => {
-                this.SUBRULE(this.operator)
+                this.SUBRULE(this.binaryOperator)
             })
             this.SUBRULE2(this.term)
         })
@@ -353,24 +341,27 @@ export class CssParser extends Parser {
         this.OPTION(() => {
             this.SUBRULE(this.unary_operator)
         })
+        this.SUBRULE(this.value)
+    })
 
+    value = this.RULE("value", () => {
         // @formatter:off
-            this.OR([
-                {ALT: () => { this.CONSUME(Num) }},
-                {ALT: () => { this.CONSUME(Percentage) }},
-                {ALT: () => { this.CONSUME(Length) }},
-                {ALT: () => { this.CONSUME(Ems) }},
-                {ALT: () => { this.CONSUME(Exs) }},
-                {ALT: () => { this.CONSUME(Angle) }},
-                {ALT: () => { this.CONSUME(Time) }},
-                {ALT: () => { this.CONSUME(Freq) }},
-                {ALT: () => { this.CONSUME(StringLiteral) }},
-                {ALT: () => { this.CONSUME(Ident) }},
-                {ALT: () => { this.CONSUME(Uri) }},
-                {ALT: () => { this.SUBRULE(this.hexcolor) }},
-                {ALT: () => { this.SUBRULE(this.cssFunction) }}
-            ])
-            // @formatter:on
+        this.OR([
+            {ALT: () => { this.CONSUME(Num) }},
+            {ALT: () => { this.CONSUME(Percentage) }},
+            {ALT: () => { this.CONSUME(Length) }},
+            {ALT: () => { this.CONSUME(Ems) }},
+            {ALT: () => { this.CONSUME(Exs) }},
+            {ALT: () => { this.CONSUME(Angle) }},
+            {ALT: () => { this.CONSUME(Time) }},
+            {ALT: () => { this.CONSUME(Freq) }},
+            {ALT: () => { this.CONSUME(StringLiteral) }},
+            {ALT: () => { this.SUBRULE(this.identifier) }},
+            {ALT: () => { this.CONSUME(Uri) }},
+            {ALT: () => { this.SUBRULE(this.hexcolor) }},
+            {ALT: () => { this.SUBRULE(this.cssFunction) }}
+        ])
+        // @formatter:on
     })
 
     // FUNCTION S* expr ")" S*
@@ -382,6 +373,10 @@ export class CssParser extends Parser {
 
     hexcolor = this.RULE("hexcolor", () => {
         this.CONSUME(Hash)
+    })
+
+    identifier = this.RULE("identifier", () => {
+        this.CONSUME(Ident)
     })
 
 }
